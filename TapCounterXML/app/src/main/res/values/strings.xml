@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">TapCounterXML</string>
     <string name="action_settings">Settings</string>
+    <string name="main_text">You tapped %d times.</string>
 </resources>
