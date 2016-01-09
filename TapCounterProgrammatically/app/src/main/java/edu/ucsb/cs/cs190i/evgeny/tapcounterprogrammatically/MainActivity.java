@@ -1,9 +1,9 @@
 package edu.ucsb.cs.cs190i.evgeny.tapcounterprogrammatically;
 
+import android.support.annotation.IdRes;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         layout = new RelativeLayout(this);
         mainTextView = new TextView(this);
         mainButton = new Button(this);
-        int mainTextViewId = 1234;
+        @IdRes int mainTextViewId = 1234;
 
         ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         layout.setLayoutParams(layoutParams);
