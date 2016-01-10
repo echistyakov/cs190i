@@ -18,6 +18,6 @@
         android:text=""
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:textSize="28sp"
+        android:textSize="45sp"
         android:id="@+id/main_text"/>
 </RelativeLayout>
