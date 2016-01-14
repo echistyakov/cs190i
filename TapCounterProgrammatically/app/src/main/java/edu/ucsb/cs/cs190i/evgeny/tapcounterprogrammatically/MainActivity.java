@@ -31,9 +31,9 @@ public class MainActivity extends AppCompatActivity {
         ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         layout.setLayoutParams(layoutParams);
         layout.setOrientation(LinearLayout.VERTICAL);
-        int horizontalPad = (int) getResources().getDimension(R.dimen.activity_horizontal_margin);
-        int verticalPad = (int) getResources().getDimension(R.dimen.activity_vertical_margin);
-        layout.setPadding(horizontalPad, verticalPad, horizontalPad, verticalPad);
+        float dpi = getResources().getDisplayMetrics().densityDpi;
+        int pad =  16 * (int) (dpi / 160f);
+        layout.setPadding(pad, pad, pad, pad);
 
         // TextView parameters
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         // Button parameters
         params = new LinearLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.gravity = Gravity.CENTER_HORIZONTAL;
-        params.setMargins(0, verticalPad, 0, 0);
+        params.setMargins(0, pad, 0, 0);
         mainButton.setLayoutParams(params);
         mainButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
         mainButton.setText(buttonText);
