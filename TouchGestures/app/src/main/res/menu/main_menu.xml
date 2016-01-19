@@ -2,11 +2,23 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".MainActivity">
+    tools:context="edu.ucsb.cs.cs190i.evgeny.touchgestures.MainActivity">
     <item
-        android:id="@+id/select_image"
+        android:id="@+id/action_select_image"
         android:icon="@drawable/ic_image"
-        android:title="@string/select_image"
-        app:showAsAction="always"/>
+        android:title="@string/action_select_image"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/action_settings"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_help"
+        android:orderInCategory="100"
+        android:title="@string/action_help"
+        app:showAsAction="never" />
 
 </menu>
