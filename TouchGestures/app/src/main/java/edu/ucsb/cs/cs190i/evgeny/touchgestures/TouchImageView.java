@@ -1,12 +1,12 @@
 package edu.ucsb.cs.cs190i.evgeny.touchgestures;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
-import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -54,8 +54,8 @@ public class TouchImageView extends ImageView {
     }
 
     @Override
-    public void setImageURI(Uri uri) {
-        super.setImageURI(uri);
+    public void setImageBitmap(Bitmap mp) {
+        super.setImageBitmap(mp);
         this.matrix = new Matrix();
     }
 
