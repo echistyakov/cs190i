@@ -50,18 +50,19 @@ public class TouchImageView extends ImageView {
         this.matrix = this.getImageMatrix();
         this.paint.setColor(Color.RED);
         this.markerLocation = null;
+        this.setScaleType(ScaleType.MATRIX);
     }
 
     @Override
     public void setImageURI(Uri uri) {
         super.setImageURI(uri);
-        this.matrix = this.getImageMatrix();
+        this.matrix = new Matrix();
     }
 
     @Override
     protected void onDraw (Canvas canvas) {
         // Apply matrix before drawing
-        this.setImageMatrix(matrix);
+        this.setImageMatrix(this.matrix);
         // Draw
         super.onDraw(canvas);
         // Draw marker
@@ -70,7 +71,7 @@ public class TouchImageView extends ImageView {
 
     private void drawMarker(Canvas canvas) {
         if (markerLocation != null) {
-            canvas.drawCircle(markerLocation.x, markerLocation.y, 10, paint);
+            canvas.drawCircle(markerLocation.x, markerLocation.y, 15, paint);
         }
     }
 
