@@ -4,8 +4,6 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
@@ -17,8 +15,6 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if (hasReadStoragePermission()) {
-            setDefaultImage();
+            setDefaultImageUri();
         } else {
             requestPermissions();
         }
@@ -80,14 +76,7 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_IMAGE) {
                 Uri selectedImageUri = data.getData();
-                InputStream imageStream = null;
-                try {
-                    imageStream = getContentResolver().openInputStream(selectedImageUri);
-                } catch (FileNotFoundException e) {
-                    Toast.makeText(this, "Could not open image file!",  Toast.LENGTH_SHORT).show();
-                }
-                Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-                this.setImage(selectedImage);
+                this.setImageUri(selectedImageUri);
             }
         }
     }
@@ -96,23 +85,23 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         if (requestCode == READ_EXTERNAL_STORAGE_PERMISSION_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                setDefaultImage();
+                setDefaultImageUri();
             } else {
                 Toast.makeText(this, "Read permission denied - can't open default image.", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void setImage(Bitmap image) {
+    private void setImageUri(Uri imageUri) {
         TouchImageView touchImageVIew = (TouchImageView) findViewById(R.id.touch_image_view);
-        touchImageVIew.setImageBitmap(image);
+        touchImageVIew.setImageURI(imageUri);
     }
 
-    private void setDefaultImage() {
+    private void setDefaultImageUri() {
         File imageFile = new File(downloadsPath, defaultImage);
         if (imageFile.exists()) {
-            Bitmap image = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
-            this.setImage(image);
+            Uri imageUri = Uri.parse(imageFile.toURI().toString());
+            this.setImageUri(imageUri);
         } else {
             Toast.makeText(this, "Default image could not be found.", Toast.LENGTH_SHORT).show();
         }

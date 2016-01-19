@@ -1,10 +1,12 @@
 package edu.ucsb.cs.cs190i.evgeny.touchgestures;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.PointF;
+import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -13,6 +15,9 @@ import android.widget.ImageView;
 public class TouchImageView extends ImageView {
 
     private Matrix matrix;
+    private PointF markerLocation = null;
+    private Paint paint = new Paint();
+    private MyTapGestureDetector tapGestureDetector;
     private ScaleGestureDetector scaleGestureDetector;
     private MyDragGestureDetector dragGestureDetector;
     private MyRotateGestureDetector rotateGestureDetector;
@@ -41,12 +46,15 @@ public class TouchImageView extends ImageView {
         this.scaleGestureDetector = new ScaleGestureDetector(this.getContext(), new MyScaleGestureListener());
         this.dragGestureDetector = new MyDragGestureDetector();
         this.rotateGestureDetector = new MyRotateGestureDetector();
+        this.tapGestureDetector = new MyTapGestureDetector();
         this.matrix = this.getImageMatrix();
+        this.paint.setColor(Color.RED);
+        this.markerLocation = null;
     }
 
     @Override
-    public void setImageBitmap(Bitmap mp) {
-        super.setImageBitmap(mp);
+    public void setImageURI(Uri uri) {
+        super.setImageURI(uri);
         this.matrix = this.getImageMatrix();
     }
 
@@ -56,10 +64,21 @@ public class TouchImageView extends ImageView {
         this.setImageMatrix(matrix);
         // Draw
         super.onDraw(canvas);
+        // Draw marker
+        this.drawMarker(canvas);
+    }
+
+    private void drawMarker(Canvas canvas) {
+        if (markerLocation != null) {
+            canvas.drawCircle(markerLocation.x, markerLocation.y, 10, paint);
+        }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        // Tap gesture detector
+        this.tapGestureDetector.onTouchEvent(event);
+
         // Scale gesture handling
         this.scaleGestureDetector.onTouchEvent(event);
 
@@ -70,6 +89,32 @@ public class TouchImageView extends ImageView {
         this.rotateGestureDetector.onTouchEvent(event);
 
         return true;
+    }
+
+    /////////////////
+    // Tap Gesture //
+    /////////////////
+    private class MyTapGestureDetector {
+        private PointF tapDownLocation = new PointF(0, 0);
+
+        public boolean onTouchEvent(MotionEvent event) {
+            int action = event.getActionMasked();
+
+            // Primary pointer going down
+            if (action == MotionEvent.ACTION_DOWN) {
+                tapDownLocation.set(event.getX(), event.getY());
+            }
+            // Primary pointer is being released
+            else if (action == MotionEvent.ACTION_UP) {
+                PointF tapUpLocation = new PointF(event.getX(), event.getY());
+                if (tapUpLocation.equals(tapDownLocation)) {
+                    markerLocation = tapUpLocation;
+                    invalidate();
+                }
+            }
+
+            return true;
+        }
     }
 
     ///////////////////
