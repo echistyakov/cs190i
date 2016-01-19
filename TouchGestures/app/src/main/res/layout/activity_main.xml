@@ -12,5 +12,5 @@
     <edu.ucsb.cs.cs190i.evgeny.touchgestures.TouchImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/touch_image_view"/>
+        android:id="@+id/touch_image_view" />
 </RelativeLayout>

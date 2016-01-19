@@ -41,6 +41,7 @@ public class TouchImageView extends ImageView {
         this.scaleGestureDetector = new ScaleGestureDetector(this.getContext(), new MyScaleGestureListener());
         this.dragGestureDetector = new MyDragGestureDetector();
         this.rotateGestureDetector = new MyRotateGestureDetector();
+        this.matrix = this.getImageMatrix();
     }
 
     @Override
@@ -168,11 +169,13 @@ public class TouchImageView extends ImageView {
             else if (pointerCount == 2 && firstPointerId != -1 && secondPointerId != -1 && action == MotionEvent.ACTION_MOVE) {
                 PointF newFirstPointerLocation = new PointF(event.getX(firstPointerIndex), event.getY(firstPointerIndex));
                 PointF newSecondPointerLocation = new PointF(event.getX(secondPointerIndex), event.getY(secondPointerIndex));
+                PointF newPivotLocation = getMiddlePoint(newFirstPointerLocation, newSecondPointerLocation);
                 double rotationAngle = getAngle(firstPointerLocation, secondPointerLocation, newFirstPointerLocation, newSecondPointerLocation);
 
                 matrix.postRotate((float)rotationAngle, pivotLocation.x, pivotLocation.y);
                 firstPointerLocation = newFirstPointerLocation;
                 secondPointerLocation = newSecondPointerLocation;
+                pivotLocation = newPivotLocation;
                 invalidate();
             }
             else if (action == MotionEvent.ACTION_POINTER_UP) {
