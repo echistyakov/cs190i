@@ -57,6 +57,7 @@ public class TouchImageView extends ImageView {
     public void setImageBitmap(Bitmap mp) {
         super.setImageBitmap(mp);
         this.matrix = new Matrix();
+        this.markerLocation = null;
     }
 
     @Override
