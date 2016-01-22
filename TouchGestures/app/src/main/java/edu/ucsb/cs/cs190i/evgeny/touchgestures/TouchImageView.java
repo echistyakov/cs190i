@@ -188,8 +188,7 @@ public class TouchImageView extends ImageView {
     private class MyRotateGestureDetector {
         private PointF firstPointerLocation = new PointF(0, 0);
         private PointF secondPointerLocation = new PointF(0, 0);
-        private PointF pivotLocation = new PointF(0, 0);
-        private int firstPointerId = -1; // -1 for "undefined"
+        private int firstPointerId = -1;  // -1 for "undefined"
         private int secondPointerId = -1; // -1 for "undefined"
 
         public boolean onTouchEvent(MotionEvent event) {
@@ -210,19 +209,17 @@ public class TouchImageView extends ImageView {
                 secondPointerId = currentPointerId;
                 secondPointerIndex = event.findPointerIndex(secondPointerId);
                 secondPointerLocation.set(event.getX(secondPointerIndex), event.getY(secondPointerIndex));
-                pivotLocation = getMiddlePoint(firstPointerLocation, secondPointerLocation);
             }
             // Two tracked pointers are down, moving
             else if (pointerCount == 2 && firstPointerId != -1 && secondPointerId != -1 && action == MotionEvent.ACTION_MOVE) {
                 PointF newFirstPointerLocation = new PointF(event.getX(firstPointerIndex), event.getY(firstPointerIndex));
                 PointF newSecondPointerLocation = new PointF(event.getX(secondPointerIndex), event.getY(secondPointerIndex));
-                PointF newPivotLocation = getMiddlePoint(newFirstPointerLocation, newSecondPointerLocation);
+                PointF pivotLocation = getMiddlePoint(newFirstPointerLocation, newSecondPointerLocation);
                 double rotationAngle = getAngle(firstPointerLocation, secondPointerLocation, newFirstPointerLocation, newSecondPointerLocation);
 
                 matrix.postRotate((float)rotationAngle, pivotLocation.x, pivotLocation.y);
                 firstPointerLocation = newFirstPointerLocation;
                 secondPointerLocation = newSecondPointerLocation;
-                pivotLocation = newPivotLocation;
                 invalidate();
             }
             else if (action == MotionEvent.ACTION_POINTER_UP) {
@@ -249,7 +246,7 @@ public class TouchImageView extends ImageView {
         }
 
         private PointF getMiddlePoint(PointF p1, PointF p2) {
-            return new PointF((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+            return new PointF((p1.x + p2.x) / 2f, (p1.y + p2.y) / 2f);
         }
     }
 }
