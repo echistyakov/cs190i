@@ -17,7 +17,6 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -35,19 +34,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        this.setContentView(R.layout.activity_main);
 
-        if (hasReadStoragePermission()) {
-            setDefaultImage();
+        if (this.hasReadStoragePermission()) {
+            this.setDefaultImage();
         } else {
-            requestPermissions();
+            this.requestPermissions();
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main_menu, menu);
+        this.getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
 
@@ -55,11 +54,13 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
         if (itemId == R.id.action_select_image) {
+            // Launch image selector
             Intent intent = new Intent();
             intent.setType("image/*");
             intent.setAction(Intent.ACTION_GET_CONTENT);
-            startActivityForResult(Intent.createChooser(intent, "Select Image"), SELECT_IMAGE);
+            this.startActivityForResult(Intent.createChooser(intent, "Select Image"), SELECT_IMAGE);
         } else if (itemId == R.id.action_settings) {
+            // Show settings dialogue
             new AlertDialog.Builder(this)
                     .setTitle("Settings")
                     .setMessage("Hello Settings!")
@@ -67,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
                     .show();
 
         } else if (itemId == R.id.action_help) {
+            // Show help dialogue
             new AlertDialog.Builder(this)
                     .setTitle("Help")
                     .setMessage("Hello Help!")
@@ -81,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_IMAGE) {
                 Uri selectedImageUri = data.getData();
-                Bitmap selectedImage = getBitmapFromUri(selectedImageUri);
+                Bitmap selectedImage = this.getBitmapFromUri(selectedImageUri);
                 this.setImage(selectedImage);
             }
         }
@@ -91,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         if (requestCode == READ_EXTERNAL_STORAGE_PERMISSION_REQUEST) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                setDefaultImage();
+                this.setDefaultImage();
             } else {
                 Toast.makeText(this, "Read permission denied - can't open default image.", Toast.LENGTH_SHORT).show();
             }
@@ -105,12 +107,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void setDefaultImage() {
         File imageFile = new File(downloadsPath, defaultImage);
-        if (imageFile.exists()) {
-            Uri imageUri = Uri.parse(imageFile.toURI().toString());
-            Bitmap bitmap = getBitmapFromUri(imageUri);
-            this.setImage(bitmap);
+        Uri imageUri = Uri.parse(imageFile.toURI().toString());
+        Bitmap bitmap = this.getBitmapFromUri(imageUri);
+        if (bitmap == null) {
+            Toast.makeText(this, "Default image could not be opened.", Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(this, "Default image could not be found.", Toast.LENGTH_SHORT).show();
+            this.setImage(bitmap);
         }
     }
 
@@ -126,9 +128,9 @@ public class MainActivity extends AppCompatActivity {
         InputStream stream = null;
         Bitmap bitmap = null;
         try {
-            stream = getContentResolver().openInputStream(bitmapUri);
+            stream = this.getContentResolver().openInputStream(bitmapUri);
             bitmap = BitmapFactory.decodeStream(stream);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             // Do nothing
         } finally {
             if (stream != null) {

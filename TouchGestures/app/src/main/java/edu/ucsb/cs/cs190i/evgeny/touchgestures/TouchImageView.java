@@ -17,6 +17,8 @@ public class TouchImageView extends ImageView {
     private Matrix matrix;
     private PointF markerLocation = null;
     private Paint paint = new Paint();
+
+    // Gesture detectors
     private MyTapGestureDetector tapGestureDetector;
     private ScaleGestureDetector scaleGestureDetector;
     private MyDragGestureDetector dragGestureDetector;
@@ -104,17 +106,16 @@ public class TouchImageView extends ImageView {
 
             // Primary pointer going down
             if (action == MotionEvent.ACTION_DOWN) {
-                tapDownLocation.set(event.getX(), event.getY());
+                this.tapDownLocation.set(event.getX(), event.getY());
             }
             // Primary pointer is being released
             else if (action == MotionEvent.ACTION_UP) {
                 PointF tapUpLocation = new PointF(event.getX(), event.getY());
-                if (tapUpLocation.equals(tapDownLocation)) {
+                if (tapUpLocation.equals(this.tapDownLocation)) {
                     markerLocation = tapUpLocation;
                     invalidate();
                 }
             }
-
             return true;
         }
     }
@@ -134,7 +135,7 @@ public class TouchImageView extends ImageView {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             float scaleFactor = detector.getScaleFactor();
-            matrix.postScale(scaleFactor, scaleFactor, scaleFocalPoint.x, scaleFocalPoint.y);
+            matrix.postScale(scaleFactor, scaleFactor, this.scaleFocalPoint.x, this.scaleFocalPoint.y);
             invalidate();
             return true;
         }
@@ -144,40 +145,61 @@ public class TouchImageView extends ImageView {
     // Drag Gesture //
     //////////////////
     private class MyDragGestureDetector {
-        private PointF activePointerLocation = new PointF(0, 0);
-        private int activePointerId = -1; // -1 for "undefined"
+        private PointF lastLocation = new PointF(0, 0);
 
         public boolean onTouchEvent(MotionEvent event) {
             int action = event.getActionMasked();
+            int pointerCount = event.getPointerCount();
             int currentActionIndex = event.getActionIndex();
             int currentPointerId = event.getPointerId(currentActionIndex);
-            int activePointerIndex = event.findPointerIndex(activePointerId);
+            int currentPointerIndex = event.findPointerIndex(currentPointerId);
 
-            // Primary pointer going down
             if (action == MotionEvent.ACTION_DOWN) {
-                activePointerId = currentPointerId;
-                activePointerLocation.set(event.getX(), event.getY());
-            }
-            // Primary pointer is being released
-            else if (action == MotionEvent.ACTION_UP) {
-                activePointerId = -1;
-            }
-            // Primary pointer is being released but more pointers remain
-            else if (activePointerId == currentPointerId && action == MotionEvent.ACTION_POINTER_UP) {
-                int pointerCount = event.getPointerCount();
-                int pointerIndex = (activePointerIndex + 1) % pointerCount;
-                activePointerId = event.getPointerId(pointerIndex);
-                activePointerLocation.set(event.getX(pointerIndex), event.getY(pointerIndex));
-            }
-            // Primary pointer moved
-            else if (activePointerId != -1 && action == MotionEvent.ACTION_MOVE) {
-                float curX = event.getX(activePointerIndex);
-                float curY = event.getY(activePointerIndex);
-                matrix.postTranslate(curX - activePointerLocation.x, curY - activePointerLocation.y);
-                activePointerLocation.set(curX, curY);
+                float newX = event.getX();
+                float newY = event.getY();
+                this.lastLocation.set(newX, newY);
+            } else if (action == MotionEvent.ACTION_POINTER_DOWN) {
+                float sumX = 0;
+                float sumY = 0;
+                for (int i = 0; i < pointerCount; i++) {
+                    sumX += event.getX(i);
+                    sumY += event.getY(i);
+                }
+                float newX = sumX / pointerCount;
+                float newY = sumY / pointerCount;
+                this.lastLocation.set(newX, newY);
+            } else if (action == MotionEvent.ACTION_POINTER_UP) {
+                float sumX = 0;
+                float sumY = 0;
+                for (int i = 0; i < pointerCount; i++) {
+                    sumX += event.getX(i);
+                    sumY += event.getY(i);
+                }
+                float newX = sumX / pointerCount;
+                float newY = sumY / pointerCount;
+                matrix.postTranslate(newX - this.lastLocation.x, newY - this.lastLocation.y);
+                invalidate();
+
+                float pointerX = event.getX(currentPointerIndex);
+                float pointerY = event.getY(currentPointerIndex);
+                sumX -= pointerX;
+                sumY -= pointerY;
+                newX = sumX / (pointerCount - 1);
+                newY = sumY / (pointerCount - 1);
+                this.lastLocation.set(newX, newY);
+            } else if (action == MotionEvent.ACTION_MOVE) {
+                float sumX = 0;
+                float sumY = 0;
+                for (int i = 0; i < pointerCount; i++) {
+                    sumX += event.getX(i);
+                    sumY += event.getY(i);
+                }
+                float newX = sumX / pointerCount;
+                float newY = sumY / pointerCount;
+                matrix.postTranslate(newX - this.lastLocation.x, newY - this.lastLocation.y);
+                this.lastLocation.set(newX, newY);
                 invalidate();
             }
-
             return true;
         }
     }
@@ -196,47 +218,47 @@ public class TouchImageView extends ImageView {
             int currentActionIndex = event.getActionIndex();
             int currentPointerId = event.getPointerId(currentActionIndex);
             int pointerCount = event.getPointerCount();
-            int firstPointerIndex = event.findPointerIndex(firstPointerId);
-            int secondPointerIndex = event.findPointerIndex(secondPointerId);
+            int firstPointerIndex = event.findPointerIndex(this.firstPointerId);
+            int secondPointerIndex = event.findPointerIndex(this.secondPointerId);
 
             // First pointer going down
             if (action == MotionEvent.ACTION_DOWN) {
-                firstPointerId = currentPointerId;
-                firstPointerLocation.set(event.getX(), event.getY());
+                this.firstPointerId = currentPointerId;
+                this.firstPointerLocation.set(event.getX(), event.getY());
             }
             // Second pointer going down
             else if (action == MotionEvent.ACTION_POINTER_DOWN && pointerCount == 2) {
-                secondPointerId = currentPointerId;
-                secondPointerIndex = event.findPointerIndex(secondPointerId);
-                secondPointerLocation.set(event.getX(secondPointerIndex), event.getY(secondPointerIndex));
+                this.secondPointerId = currentPointerId;
+                secondPointerIndex = event.findPointerIndex(this.secondPointerId);
+                this.secondPointerLocation.set(event.getX(secondPointerIndex), event.getY(secondPointerIndex));
             }
             // Two tracked pointers are down, moving
-            else if (pointerCount == 2 && firstPointerId != -1 && secondPointerId != -1 && action == MotionEvent.ACTION_MOVE) {
+            else if (pointerCount == 2 && this.firstPointerId != -1 && this.secondPointerId != -1 && action == MotionEvent.ACTION_MOVE) {
                 PointF newFirstPointerLocation = new PointF(event.getX(firstPointerIndex), event.getY(firstPointerIndex));
                 PointF newSecondPointerLocation = new PointF(event.getX(secondPointerIndex), event.getY(secondPointerIndex));
-                PointF pivotLocation = getMiddlePoint(newFirstPointerLocation, newSecondPointerLocation);
-                double rotationAngle = getAngle(firstPointerLocation, secondPointerLocation, newFirstPointerLocation, newSecondPointerLocation);
+                PointF pivotLocation = this.getMiddlePoint(newFirstPointerLocation, newSecondPointerLocation);
+                double rotationAngle = this.getAngle(this.firstPointerLocation, this.secondPointerLocation, newFirstPointerLocation, newSecondPointerLocation);
 
                 matrix.postRotate((float)rotationAngle, pivotLocation.x, pivotLocation.y);
-                firstPointerLocation = newFirstPointerLocation;
-                secondPointerLocation = newSecondPointerLocation;
+                this.firstPointerLocation = newFirstPointerLocation;
+                this.secondPointerLocation = newSecondPointerLocation;
                 invalidate();
             }
             else if (action == MotionEvent.ACTION_POINTER_UP) {
-                if (firstPointerId == currentPointerId) {
-                    firstPointerId = -1;
+                if (this.firstPointerId == currentPointerId) {
+                    this.firstPointerId = -1;
                 } else if (secondPointerId == currentPointerId) {
-                    secondPointerId = -1;
+                    this.secondPointerId = -1;
                 }
             }
             else if (action == MotionEvent.ACTION_UP) {
-                firstPointerId = secondPointerId = -1;
+                this.firstPointerId = this.secondPointerId = -1;
             }
-
             return true;
         }
 
         private double getAngle(PointF p1, PointF p2, PointF np1, PointF np2) {
+            // Based on the following StackOverflow post: http://stackoverflow.com/questions/10682019/android-two-finger-rotation
             double oldAtan = Math.atan2(p1.y - p2.y, p1.x - p2.x);
             double newAtan = Math.atan2(np1.y - np2.y, np1.x - np2.x);
             double angle = Math.toDegrees(newAtan - oldAtan) % 360;
