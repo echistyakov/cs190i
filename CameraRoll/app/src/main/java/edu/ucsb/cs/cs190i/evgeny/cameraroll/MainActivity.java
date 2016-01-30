@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(imageAdapter);
 
         // Set up layout
-        chooseViewToDisplay();
+        displayCorrectView();
 
         // Permissions
         pm.requestPermissionsIfMissing();
@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
                                 imageAdapter.notifyItemRemoved(0);
                                 picasso.invalidate(i.uri);
                             }
-                            chooseViewToDisplay();
+                            hideRecyclerView();
                         }
                     })
                     .create();
@@ -134,24 +134,44 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == IMAGE_CAPTURE_CODE) {
             if (resultCode == RESULT_OK) {
-                db.insertImage(image);
-                imageAdapter.notifyItemInserted(0);
-                chooseViewToDisplay();
-                // TODO: add to list view
+                // Insert image into the DB
+                this.db.insertImage(image);
+                // Add image to the adapter
+                this.imageAdapter.notifyItemInserted(0);
+                // Show RecyclerView if it's not already shown
+                this.showRecyclerView();
             }
         }
     }
 
-    private void chooseViewToDisplay() {
+    private void showRecyclerView() {
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         TextView noPhotosText = (TextView) findViewById(R.id.no_photos_text);
 
-        if (db.isEmpty()) {
-            recyclerView.setVisibility(View.GONE);
-            noPhotosText.setVisibility(View.VISIBLE);
-        } else {
+        if (recyclerView.getVisibility() == View.GONE) {
             recyclerView.setVisibility(View.VISIBLE);
             noPhotosText.setVisibility(View.GONE);
+        }
+
+        // Scroll RecyclerView to the top
+        recyclerView.scrollToPosition(0);
+    }
+
+    private void hideRecyclerView() {
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        TextView noPhotosText = (TextView) findViewById(R.id.no_photos_text);
+
+        if (recyclerView.getVisibility() == View.VISIBLE) {
+            recyclerView.setVisibility(View.GONE);
+            noPhotosText.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void displayCorrectView() {
+        if(this.db.isEmpty()) {
+            this.hideRecyclerView();
+        } else {
+            this.showRecyclerView();
         }
     }
 
