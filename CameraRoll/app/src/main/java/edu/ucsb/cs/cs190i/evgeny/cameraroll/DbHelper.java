@@ -11,11 +11,9 @@ import android.net.Uri;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageDbHelper extends SQLiteOpenHelper {
+public class DbHelper extends SQLiteOpenHelper {
 
-    //DateFormat sqliteDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-    public ImageDbHelper(Context context) {
+    public DbHelper(Context context) {
         super(context, DbContract.DATABASE_NAME, null, DbContract.DATABASE_VERSION);
     }
 
@@ -38,13 +36,13 @@ public class ImageDbHelper extends SQLiteOpenHelper {
     }
 
     public void deleteImage(long timestamp) {
-        this.getWritableDatabase().delete(DbContract.ImageSchema.TABLE_NAME,
-                DbContract.ImageSchema.COLUMN_TIMESTAMP + " == ?",
-                new String[]{Long.toString(timestamp)});
+        this.getWritableDatabase().delete(DbContract.ImageSchema.TABLE_NAME,                 // Table name
+                                          DbContract.ImageSchema.COLUMN_TIMESTAMP + " == ?", // Selection
+                                          new String[]{Long.toString(timestamp)});           // Selection args
     }
 
     public void deleteImage(Image i) {
-        deleteImage(i.timestamp);
+        this.deleteImage(i.timestamp);
     }
 
     public Image getNthImage(int n) {

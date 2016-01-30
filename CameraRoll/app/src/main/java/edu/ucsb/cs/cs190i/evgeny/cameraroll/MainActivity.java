@@ -15,9 +15,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private final static int PERMISSION_REQUEST = 2;
 
     private PermissionManager pm = null;
-    private ImageDbHelper db = null;
+    private DbHelper db = null;
     private Picasso picasso = null;
     private ImageAdapter imageAdapter = null;
     private Image image = null;
@@ -49,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialization
         this.pm = new PermissionManager();
-        this.db = new ImageDbHelper(this);
+        this.db = new DbHelper(this);
         this.picasso = Picasso.with(this);
         this.imageAdapter = new ImageAdapter(this.db, this.picasso);
 
@@ -66,7 +68,10 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, image.uri);
                     startActivityForResult(intent, IMAGE_CAPTURE_CODE);
                 } else {
-                    Toast.makeText(getApplicationContext(), "Image capture requires camera and storage permissions.", Toast.LENGTH_SHORT).show();
+                    Toast toast = Toast.makeText(getApplicationContext(), R.string.missing_permissions, Toast.LENGTH_SHORT);
+                    TextView textView = (TextView) toast.getView().findViewById(android.R.id.message);
+                    textView.setGravity(Gravity.CENTER);
+                    toast.show();
                 }
             }
         });
@@ -74,13 +79,11 @@ public class MainActivity extends AppCompatActivity {
         // Set up Recycle View
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(imageAdapter);
-
-        // Set up layout
-        displayCorrectView();
+        recyclerView.setAdapter(this.imageAdapter);
+        this.displayCorrectView();
 
         // Permissions
-        pm.requestPermissionsIfMissing();
+        this.pm.requestPermissionsIfMissing();
     }
 
     @Override
@@ -165,6 +168,9 @@ public class MainActivity extends AppCompatActivity {
             recyclerView.setVisibility(View.GONE);
             noPhotosText.setVisibility(View.VISIBLE);
         }
+
+        // Remove view cache from RecyclerView
+        recyclerView.removeAllViews();
     }
 
     private void displayCorrectView() {

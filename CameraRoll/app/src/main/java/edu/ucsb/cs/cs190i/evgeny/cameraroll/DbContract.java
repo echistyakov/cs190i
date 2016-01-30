@@ -4,14 +4,16 @@ package edu.ucsb.cs.cs190i.evgeny.cameraroll;
 import android.provider.BaseColumns;
 
 public final class DbContract {
+
     // Database version
     public static final int DATABASE_VERSION = 1;
     // Database name
     public static final String DATABASE_NAME = "camera_roll.db";
+    //DateFormat sqliteDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    public DbContract() {}
 
     public static abstract class ImageSchema implements BaseColumns {
+
         // Table name
         public static final String TABLE_NAME = "images";
 
@@ -25,7 +27,7 @@ public final class DbContract {
 
         // Queries
         public static final String COUNT = "SELECT count(*) FROM " + TABLE_NAME;
-        public static final String TABLE_CREATE = String.format("CREATE TABLE %s (%s TEXT, %s INTEGER PRIMARY KEY)",
+        public static final String TABLE_CREATE = String.format("CREATE TABLE %s (%s TEXT NOT NULL, %s INTEGER PRIMARY KEY)",
                                                                  TABLE_NAME,
                                                                  COLUMN_URI,
                                                                  COLUMN_TIMESTAMP);

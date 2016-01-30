@@ -7,8 +7,6 @@ import android.net.Uri;
 import android.os.Environment;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -38,6 +36,11 @@ public class ImageIO {
     public static File getOutputImageFile() {
         String timeStamp = dateFormat.format(new Date());
         return new File(imageFolder, "IMG_"+ timeStamp + ".jpg");
+    }
+
+    public static boolean fileExists(Uri uri) {
+        File file = new File(uri.getPath());
+        return file.exists();
     }
 
     public static Bitmap getBitmap(Uri bitmapUri) {

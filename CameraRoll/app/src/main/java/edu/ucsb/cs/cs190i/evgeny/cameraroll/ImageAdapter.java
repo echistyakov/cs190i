@@ -13,10 +13,10 @@ import com.squareup.picasso.Picasso;
 
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> {
 
-    private ImageDbHelper db;
+    private DbHelper db;
     private Picasso picasso;
 
-    public ImageAdapter(ImageDbHelper db, Picasso picasso) {
+    public ImageAdapter(DbHelper db, Picasso picasso) {
         this.db = db;
         this.picasso = picasso;
     }

@@ -3,6 +3,7 @@ package edu.ucsb.cs.cs190i.evgeny.cameraroll;
 import android.net.Uri;
 
 public class Image {
+
     public Uri uri;
     public long timestamp;
 
