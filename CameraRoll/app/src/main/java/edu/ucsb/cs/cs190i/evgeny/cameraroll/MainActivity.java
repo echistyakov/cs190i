@@ -1,5 +1,6 @@
 package edu.ucsb.cs.cs190i.evgeny.cameraroll;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -36,6 +37,9 @@ public class MainActivity extends AppCompatActivity {
     private final static int IMAGE_CAPTURE_CODE = 1;
     private final static int PERMISSION_REQUEST = 2;
 
+    private Uri imageUri = null;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,13 +52,16 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                Uri imageUri = getOutputImageFileUri();
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-                startActivityForResult(intent, IMAGE_CAPTURE_CODE);
-
-                // TODO: open camera
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                // If we have the necessary permissions
+                if (hasPermission(Manifest.permission.CAMERA) && hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    // Launch camera
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    imageUri = getOutputImageFileUri();
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                    startActivityForResult(intent, IMAGE_CAPTURE_CODE);
+                } else {
+                    Toast.makeText(getApplicationContext(), "Image capture requires camera and storage permissions.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -110,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == IMAGE_CAPTURE_CODE) {
             if (resultCode == RESULT_OK) {
-                Uri imageUri = data.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
                 // TODO: add to list
                 // Image captured and saved to fileUri specified in the Intent
                 Toast.makeText(this, "Image saved to:\n" + imageUri, Toast.LENGTH_LONG).show();
