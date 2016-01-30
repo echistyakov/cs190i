@@ -101,19 +101,19 @@ public class MainActivity extends AppCompatActivity {
                     .setTitle("Delete all?")
                     .setMessage("Photos will be permanently deleted.")
                     .setIcon(R.drawable.ic_delete)
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // Do nothing
+                        }
+                    })
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             for (Image i : db.getAllImages()) {
                                 db.deleteImage(i);
                                 ImageIO.deleteImage(i.uri);
                             }
-                        }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // Do nothing
                         }
                     })
                     .create();
