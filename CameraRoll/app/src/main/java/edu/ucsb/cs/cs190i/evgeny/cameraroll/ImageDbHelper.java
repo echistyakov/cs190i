@@ -39,12 +39,36 @@ public class ImageDbHelper extends SQLiteOpenHelper {
 
     public void deleteImage(long timestamp) {
         this.getWritableDatabase().delete(DbContract.ImageSchema.TABLE_NAME,
-                                          DbContract.ImageSchema.COLUMN_TIMESTAMP + " == ?",
-                                          new String[]{Long.toString(timestamp)});
+                DbContract.ImageSchema.COLUMN_TIMESTAMP + " == ?",
+                new String[]{Long.toString(timestamp)});
     }
 
     public void deleteImage(Image i) {
         deleteImage(i.timestamp);
+    }
+
+    public Image getNthImage(int n) {
+        if (n > this.getImageCount()) {
+            return null;
+        }
+
+        Image image = null;
+        Cursor c = this.getReadableDatabase().query(DbContract.ImageSchema.TABLE_NAME,  // Table name
+                                                    DbContract.ImageSchema.PROJECTION,  // Projection
+                                                    null,                               // Selection
+                                                    null,                               // Selection args
+                                                    null,                               // Group by
+                                                    null,                               // Having
+                                                    DbContract.ImageSchema.ORDER_BY,    // Order by
+                                                    n + ", " + 1);                      // Limit (1 record, starting at n)
+
+        if (c.moveToFirst()) {
+            image = new Image();
+            image.uri = Uri.parse(c.getString(c.getColumnIndexOrThrow(DbContract.ImageSchema.COLUMN_URI)));
+            image.timestamp = c.getLong(c.getColumnIndexOrThrow(DbContract.ImageSchema.COLUMN_TIMESTAMP));
+        }
+        c.close();
+        return image;
     }
 
     public List<Image> getAllImages() {

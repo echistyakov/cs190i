@@ -12,6 +12,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -33,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     private PermissionManager pm = null;
     private ImageDbHelper db = null;
+    private ImageAdapter imageAdapter = null;
     private Image image = null;
 
     @Override
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         // Initialization
         this.pm = new PermissionManager();
         this.db = new ImageDbHelper(this);
+        this.imageAdapter = new ImageAdapter(db);
 
         // Floating Action Button (Camera)
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -64,17 +67,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Set up layout
+        // Set up Recycle View
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        TextView noPhotosText = (TextView) findViewById(R.id.no_photos_text);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(imageAdapter);
 
-        if (db.isEmpty()) {
-            recyclerView.setVisibility(View.GONE);
-            noPhotosText.setVisibility(View.VISIBLE);
-        } else {
-            recyclerView.setVisibility(View.VISIBLE);
-            noPhotosText.setVisibility(View.GONE);
-        }
+        // Set up layout
+        chooseViewToDisplay();
 
         // Permissions
         pm.requestPermissionsIfMissing();
@@ -113,7 +112,9 @@ public class MainActivity extends AppCompatActivity {
                             for (Image i : db.getAllImages()) {
                                 db.deleteImage(i);
                                 ImageIO.deleteImage(i.uri);
+                                imageAdapter.notifyItemRemoved(0);
                             }
+                            chooseViewToDisplay();
                         }
                     })
                     .create();
@@ -129,8 +130,23 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == IMAGE_CAPTURE_CODE) {
             if (resultCode == RESULT_OK) {
                 db.insertImage(image);
+                imageAdapter.notifyItemInserted(0);
+                chooseViewToDisplay();
                 // TODO: add to list view
             }
+        }
+    }
+
+    private void chooseViewToDisplay() {
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        TextView noPhotosText = (TextView) findViewById(R.id.no_photos_text);
+
+        if (db.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            noPhotosText.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            noPhotosText.setVisibility(View.GONE);
         }
     }
 
