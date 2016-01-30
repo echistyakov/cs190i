@@ -21,6 +21,8 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -34,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
     private PermissionManager pm = null;
     private ImageDbHelper db = null;
+    private Picasso picasso = null;
     private ImageAdapter imageAdapter = null;
     private Image image = null;
 
@@ -47,7 +50,8 @@ public class MainActivity extends AppCompatActivity {
         // Initialization
         this.pm = new PermissionManager();
         this.db = new ImageDbHelper(this);
-        this.imageAdapter = new ImageAdapter(db);
+        this.picasso = Picasso.with(this);
+        this.imageAdapter = new ImageAdapter(this.db, this.picasso);
 
         // Floating Action Button (Camera)
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -113,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
                                 db.deleteImage(i);
                                 ImageIO.deleteImage(i.uri);
                                 imageAdapter.notifyItemRemoved(0);
+                                picasso.invalidate(i.uri);
                             }
                             chooseViewToDisplay();
                         }
