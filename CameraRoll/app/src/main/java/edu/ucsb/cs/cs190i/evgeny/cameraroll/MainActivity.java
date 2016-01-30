@@ -6,24 +6,20 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -32,13 +28,12 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final static String APP_FOLDER = "CS190IPics";
-
     private final static int IMAGE_CAPTURE_CODE = 1;
     private final static int PERMISSION_REQUEST = 2;
 
-    private Uri imageUri = null;
-
+    private PermissionManager pm = null;
+    private ImageDbHelper db = null;
+    private Image image = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,17 +42,21 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Initialization
+        this.pm = new PermissionManager();
+        this.db = new ImageDbHelper(this);
+
         // Floating Action Button (Camera)
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // If we have the necessary permissions
-                if (hasPermission(Manifest.permission.CAMERA) && hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                if (pm.hasPermission(Manifest.permission.CAMERA) && pm.hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     // Launch camera
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    imageUri = getOutputImageFileUri();
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                    image = new Image(ImageIO.getOutputImageFileUri(), new Date().getTime());
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, image.uri);
                     startActivityForResult(intent, IMAGE_CAPTURE_CODE);
                 } else {
                     Toast.makeText(getApplicationContext(), "Image capture requires camera and storage permissions.", Toast.LENGTH_SHORT).show();
@@ -65,11 +64,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Permissions
-        String[] missingPermissions = listMissingPermissions();
-        if (missingPermissions.length > 0) {
-            requestPermissions(missingPermissions);
+        // Set up layout
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        TextView noPhotosText = (TextView) findViewById(R.id.no_photos_text);
+
+        if (db.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            noPhotosText.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            noPhotosText.setVisibility(View.GONE);
         }
+
+        // Permissions
+        pm.requestPermissionsIfMissing();
     }
 
     @Override
@@ -96,7 +104,10 @@ public class MainActivity extends AppCompatActivity {
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            // TODO: delete all
+                            for (Image i : db.getAllImages()) {
+                                db.deleteImage(i);
+                                ImageIO.deleteImage(i.uri);
+                            }
                         }
                     })
                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -117,70 +128,53 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == IMAGE_CAPTURE_CODE) {
             if (resultCode == RESULT_OK) {
-                // TODO: add to list
-                // Image captured and saved to fileUri specified in the Intent
-                Toast.makeText(this, "Image saved to:\n" + imageUri, Toast.LENGTH_LONG).show();
+                db.insertImage(image);
+                // TODO: add to list view
             }
         }
     }
 
-    private static Uri getOutputImageFileUri() {
-        File imageFile = getOutputImageFile();
-        return (imageFile == null) ? null : Uri.fromFile(getOutputImageFile());
-    }
+    private class PermissionManager {
 
-    private static File getOutputImageFile() {
-        // Image folder
-        File imageFolder = new File(Environment.getExternalStorageDirectory(), APP_FOLDER);
-
-        // If storage is inaccessible right now
-        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            return null;
+        private boolean hasPermission(String permission) {
+            return ContextCompat.checkSelfPermission(getApplicationContext(), permission) == PackageManager.PERMISSION_GRANTED;
         }
 
-        // If folder does not exist and cannot be created
-        if (!imageFolder.exists() && !imageFolder.mkdirs()) {
-            return null;
+        private void requestPermissions(String[] permissions) {
+            ActivityCompat.requestPermissions(MainActivity.this, permissions, PERMISSION_REQUEST);
         }
 
-        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-        Date now = new Date();
-        String timeStamp = dateFormat.format(now);
-
-        return new File(imageFolder, "IMG_"+ timeStamp + ".jpg");
-    }
-
-    private boolean hasPermission(String permission) {
-        return ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestPermissions(String[] permissions) {
-        ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST);
-    }
-
-    private String[] listRequiredPermissions() {
-        String[] permissions = null;
-        try {
-            PackageInfo info = getPackageManager().getPackageInfo(getApplicationContext().getPackageName(), PackageManager.GET_PERMISSIONS);
-            if (info.requestedPermissions != null) {
-                permissions = Arrays.copyOf(info.requestedPermissions, info.requestedPermissions.length);
+        private String[] listRequiredPermissions() {
+            String[] permissions = null;
+            try {
+                PackageInfo info = getPackageManager().getPackageInfo(getApplicationContext().getPackageName(), PackageManager.GET_PERMISSIONS);
+                if (info.requestedPermissions != null) {
+                    permissions = Arrays.copyOf(info.requestedPermissions, info.requestedPermissions.length);
+                }
+            } catch (Exception e) {
+                // Do nothing
             }
-        } catch (Exception e) {
-            // Do nothing
+            return permissions;
         }
-        return permissions;
-    }
 
-    private String[] listMissingPermissions() {
-        List<String> missingPermissions = new ArrayList<>();
-        String[] permissions = listRequiredPermissions();
-        if (permissions != null) {
-            for (String permission : permissions) {
-                if (!hasPermission(permission)) {
-                    missingPermissions.add(permission);
+        private String[] listMissingPermissions() {
+            List<String> missingPermissions = new ArrayList<>();
+            String[] permissions = listRequiredPermissions();
+            if (permissions != null) {
+                for (String permission : permissions) {
+                    if (!hasPermission(permission)) {
+                        missingPermissions.add(permission);
+                    }
                 }
             }
+            return missingPermissions.toArray(new String[missingPermissions.size()]);
         }
-        return missingPermissions.toArray(new String[missingPermissions.size()]);
+
+        private void requestPermissionsIfMissing() {
+            String[] missingPermissions = this.listMissingPermissions();
+            if (missingPermissions.length > 0) {
+                requestPermissions(missingPermissions);
+            }
+        }
     }
 }
