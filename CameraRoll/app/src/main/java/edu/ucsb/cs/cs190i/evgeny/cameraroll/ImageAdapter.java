@@ -13,10 +13,10 @@ import com.squareup.picasso.Picasso;
 
 public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> {
 
-    private DbHelper db;
+    private ImageDb db;
     private Picasso picasso;
 
-    public ImageAdapter(DbHelper db, Picasso picasso) {
+    public ImageAdapter(ImageDb db, Picasso picasso) {
         this.db = db;
         this.picasso = picasso;
     }
@@ -40,12 +40,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
             cardView.setLayoutParams(params);
         }
         Image image = this.db.getNthImage(position);
-        this.picasso.load(image.uri).fit().centerCrop().into(imageView);
+        this.picasso.load(image.uri()).fit().centerCrop().into(imageView);
     }
 
     @Override
     public int getItemCount() {
-        return this.db.getImageCount();
+        return (int) this.db.getImageCount();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

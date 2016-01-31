@@ -19,10 +19,10 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.orm.SugarContext;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private final static int PERMISSION_REQUEST = 2;
 
     private PermissionManager pm = null;
-    private DbHelper db = null;
+    private ImageDb db = null;
     private Picasso picasso = null;
     private ImageAdapter imageAdapter = null;
     private Image image = null;
@@ -50,8 +50,9 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // Initialization
+        SugarContext.init(this);
         this.pm = new PermissionManager();
-        this.db = new DbHelper(this);
+        this.db = new ImageDb();
         this.picasso = Picasso.with(this);
         this.imageAdapter = new ImageAdapter(this.db, this.picasso);
 
@@ -65,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                     // Launch camera
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     image = new Image(ImageIO.getOutputImageFileUri(), new Date().getTime());
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, image.uri);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, image.uri());
                     startActivityForResult(intent, IMAGE_CAPTURE_CODE);
                 } else {
                     Toast toast = Toast.makeText(getApplicationContext(), R.string.missing_permissions, Toast.LENGTH_SHORT);
@@ -84,6 +85,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Permissions
         this.pm.requestPermissionsIfMissing();
+    }
+
+    @Override
+    protected void onDestroy() {
+        SugarContext.terminate();
+        super.onDestroy();
     }
 
     @Override
@@ -118,9 +125,9 @@ public class MainActivity extends AppCompatActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             for (Image i : db.getAllImages()) {
                                 db.deleteImage(i);
-                                ImageIO.deleteImage(i.uri);
+                                ImageIO.deleteImage(i.uri());
                                 imageAdapter.notifyItemRemoved(0);
-                                picasso.invalidate(i.uri);
+                                picasso.invalidate(i.uri());
                             }
                             hideRecyclerView();
                         }

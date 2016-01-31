@@ -20,7 +20,7 @@ public class ImageIO {
 
     public static void deleteImages(List<Image> images) {
         for (Image image : images) {
-            deleteImage(image.uri);
+            deleteImage(image.uri());
         }
     }
 
