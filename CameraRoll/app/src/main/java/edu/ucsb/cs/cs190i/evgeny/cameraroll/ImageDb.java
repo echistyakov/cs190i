@@ -24,10 +24,6 @@ public class ImageDb {
     }
 
     public Image getNthImage(int n) {
-        if (n > this.getImageCount()) {
-            return null;
-        }
-
         Image image = null;
         List<Image> images = Select.from(Image.class).orderBy("timestamp DESC").limit(n + ", " + 1).list();
         if (images.size() == 1) {

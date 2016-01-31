@@ -109,31 +109,40 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.delete_all) {
-            // Show confirmation dialogue
-            AlertDialog confirmationDialog = new AlertDialog.Builder(this)
-                    .setTitle("Delete all?")
-                    .setMessage("Photos will be permanently deleted.")
-                    .setIcon(R.drawable.ic_delete)
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            // Do nothing
-                        }
-                    })
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            for (Image i : db.getAllImages()) {
-                                db.deleteImage(i);
-                                ImageIO.deleteImage(i.uri());
-                                imageAdapter.notifyItemRemoved(0);
-                                picasso.invalidate(i.uri());
+            if (db.isEmpty()) {
+                AlertDialog dialog = new AlertDialog.Builder(this)
+                        .setTitle("Nothing to delete")
+                        .setMessage("Your camera roll is empty!")
+                        .setIcon(R.drawable.ic_delete)
+                        .create();
+                dialog.show();
+            } else {
+                // Show confirmation dialogue
+                AlertDialog confirmationDialog = new AlertDialog.Builder(this)
+                        .setTitle("Delete all?")
+                        .setMessage("Photos will be permanently deleted.")
+                        .setIcon(R.drawable.ic_delete)
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // Do nothing
                             }
-                            hideRecyclerView();
-                        }
-                    })
-                    .create();
-            confirmationDialog.show();
+                        })
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                for (Image i : db.getAllImages()) {
+                                    db.deleteImage(i);
+                                    ImageIO.deleteImage(i.uri());
+                                    imageAdapter.notifyItemRemoved(0);
+                                    picasso.invalidate(i.uri());
+                                }
+                                hideRecyclerView();
+                            }
+                        })
+                        .create();
+                confirmationDialog.show();
+            }
             return true;
         }
 
