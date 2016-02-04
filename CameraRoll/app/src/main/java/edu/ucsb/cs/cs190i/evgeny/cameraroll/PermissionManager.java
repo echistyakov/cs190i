@@ -12,7 +12,7 @@ import java.util.List;
 
 public class PermissionManager {
 
-    public static final int PERMISSION_REQUEST = 1001;
+    public static final int PERMISSION_REQUEST = 1;
 
     private Activity context;
 
