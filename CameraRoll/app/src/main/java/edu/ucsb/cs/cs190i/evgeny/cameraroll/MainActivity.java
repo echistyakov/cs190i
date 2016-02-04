@@ -4,13 +4,9 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -25,16 +21,12 @@ import android.widget.Toast;
 import com.orm.SugarContext;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private final static int IMAGE_CAPTURE_CODE = 1;
-    private final static int PERMISSION_REQUEST = 2;
 
     private PermissionManager pm = null;
     private ImageDb db = null;
@@ -51,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialization
         SugarContext.init(this);
-        this.pm = new PermissionManager();
+        this.pm = new PermissionManager(this);
         this.db = new ImageDb();
         this.picasso = Picasso.with(this);
         this.imageAdapter = new ImageAdapter(this.db, this.picasso);
@@ -194,50 +186,6 @@ public class MainActivity extends AppCompatActivity {
             this.hideRecyclerView();
         } else {
             this.showRecyclerView();
-        }
-    }
-
-    private class PermissionManager {
-
-        private boolean hasPermission(String permission) {
-            return ContextCompat.checkSelfPermission(getApplicationContext(), permission) == PackageManager.PERMISSION_GRANTED;
-        }
-
-        private void requestPermissions(String[] permissions) {
-            ActivityCompat.requestPermissions(MainActivity.this, permissions, PERMISSION_REQUEST);
-        }
-
-        private String[] listRequiredPermissions() {
-            String[] permissions = null;
-            try {
-                PackageInfo info = getPackageManager().getPackageInfo(getApplicationContext().getPackageName(), PackageManager.GET_PERMISSIONS);
-                if (info.requestedPermissions != null) {
-                    permissions = Arrays.copyOf(info.requestedPermissions, info.requestedPermissions.length);
-                }
-            } catch (Exception e) {
-                // Do nothing
-            }
-            return permissions;
-        }
-
-        private String[] listMissingPermissions() {
-            List<String> missingPermissions = new ArrayList<>();
-            String[] permissions = listRequiredPermissions();
-            if (permissions != null) {
-                for (String permission : permissions) {
-                    if (!hasPermission(permission)) {
-                        missingPermissions.add(permission);
-                    }
-                }
-            }
-            return missingPermissions.toArray(new String[missingPermissions.size()]);
-        }
-
-        private void requestPermissionsIfMissing() {
-            String[] missingPermissions = this.listMissingPermissions();
-            if (missingPermissions.length > 0) {
-                requestPermissions(missingPermissions);
-            }
         }
     }
 }
