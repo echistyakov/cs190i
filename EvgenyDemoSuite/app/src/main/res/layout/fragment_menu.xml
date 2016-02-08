@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:text="Speech To Text"
         android:textSize="25sp"
-        android:id="@+id/button"
+        android:id="@+id/speechToText"
         android:layout_gravity="center_horizontal" />
 
     <Button
@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:text="Text To Speech"
         android:textSize="25sp"
-        android:id="@+id/button2"
+        android:id="@+id/textToSpeech"
         android:layout_gravity="center_horizontal" />
 
     <Button
@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:text="Audio"
         android:textSize="25sp"
-        android:id="@+id/button3"
+        android:id="@+id/audio"
         android:layout_gravity="center_horizontal" />
 
     <Button
@@ -34,7 +34,7 @@
         android:layout_height="wrap_content"
         android:text="Video"
         android:textSize="25sp"
-        android:id="@+id/button4"
+        android:id="@+id/video"
         android:layout_gravity="center_horizontal" />
 
     <Button
@@ -42,6 +42,6 @@
         android:layout_height="wrap_content"
         android:text="Animation"
         android:textSize="25sp"
-        android:id="@+id/button5"
+        android:id="@+id/animation"
         android:layout_gravity="center_horizontal" />
 </LinearLayout>
