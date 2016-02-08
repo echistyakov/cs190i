@@ -14,9 +14,9 @@ public class DetailActivity extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putInt(Actions.ACTION_TYPE, getIntent().getIntExtra(Actions.ACTION_TYPE, -1));
 
-        DetailFragment fragment = new DetailFragment();
+        /*DetailFragment fragment = new DetailFragment();
         fragment.setArguments(bundle);
 
-        getFragmentManager().beginTransaction().replace(R.id.detailActivityPlaceholder, fragment).commit();
+        getFragmentManager().beginTransaction().replace(R.id.detailActivityPlaceholder, fragment).commit();*/
     }
 }

@@ -1,5 +1,6 @@
 package edu.ucsb.cs.cs190i.evgeny.evgenydemosuite;
 
+import android.app.Fragment;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.support.v7.app.AppCompatActivity;
@@ -38,12 +39,14 @@ public class MainActivity extends AppCompatActivity {
             boolean landscape = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
             int action = -1;
             int id = v.getId();
+            int frag_id = -1;
+            Fragment fragment = null;
             switch (id) {
-                case R.id.speechToText: action = Actions.SPEECH_TO_TEXT; break;
-                case R.id.textToSpeech: action = Actions.TEXT_TO_SPEECH; break;
-                case R.id.audio:        action = Actions.AUDIO;          break;
-                case R.id.video:        action = Actions.VIDEO;          break;
-                case R.id.animation:    action = Actions.ANIMATION;      break;
+                case R.id.speechToText: action = Actions.SPEECH_TO_TEXT; frag_id = R.id.speechToText; fragment = new FragmentSpeechToText(); break;
+                case R.id.textToSpeech: action = Actions.TEXT_TO_SPEECH; frag_id = R.id.textToSpeech; fragment = new FragmentTextToSpeech(); break;
+                case R.id.audio:        action = Actions.AUDIO;          frag_id = R.id.audio;        fragment = new FragmentAudio();        break;
+                case R.id.video:        action = Actions.VIDEO;          frag_id = R.id.video;        fragment = new FragmentVideo();        break;
+                case R.id.animation:    action = Actions.ANIMATION;      frag_id = R.id.animation;    fragment = new FragmentAnimation();    break;
             }
 
             if (landscape) {
@@ -51,10 +54,10 @@ public class MainActivity extends AppCompatActivity {
                 Bundle bundle = new Bundle();
                 bundle.putInt(Actions.ACTION_TYPE, action);
 
-                DetailFragment fragment = new DetailFragment();
+                /*DetailFragment fragment = new DetailFragment();
                 fragment.setArguments(bundle);
 
-                getFragmentManager().beginTransaction().replace(R.id.mainActivityPlaceholder, fragment).commit();
+                getFragmentManager().beginTransaction().replace(R.id.mainActivityPlaceholder, fragment).commit();*/
             } else {
                 // Launch intent
                 Intent intent = new Intent(v.getContext(), DetailActivity.class);
