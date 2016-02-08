@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">EvgenyDemoSuite</string>
+    <string name="helloText">Hello Text to Speech Fragment!</string>
 </resources>

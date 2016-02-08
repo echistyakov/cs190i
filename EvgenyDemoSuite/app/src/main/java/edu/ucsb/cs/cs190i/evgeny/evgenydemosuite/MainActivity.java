@@ -39,8 +39,8 @@ public class MainActivity extends AppCompatActivity {
             int action = -1;
             int id = v.getId();
             switch (id) {
-                case R.id.textToSpeech: action = Actions.TEXT_TO_SPEECH; break;
                 case R.id.speechToText: action = Actions.SPEECH_TO_TEXT; break;
+                case R.id.textToSpeech: action = Actions.TEXT_TO_SPEECH; break;
                 case R.id.audio:        action = Actions.AUDIO;          break;
                 case R.id.video:        action = Actions.VIDEO;          break;
                 case R.id.animation:    action = Actions.ANIMATION;      break;
@@ -49,16 +49,16 @@ public class MainActivity extends AppCompatActivity {
             if (landscape) {
                 // Set fragment
                 Bundle bundle = new Bundle();
-                bundle.putInt("actionType", action);
+                bundle.putInt(Actions.ACTION_TYPE, action);
 
                 DetailFragment fragment = new DetailFragment();
                 fragment.setArguments(bundle);
 
-                getFragmentManager().beginTransaction().replace(R.id.detailPlaceholder, fragment).commit();
+                getFragmentManager().beginTransaction().replace(R.id.mainActivityPlaceholder, fragment).commit();
             } else {
                 // Launch intent
                 Intent intent = new Intent(v.getContext(), DetailActivity.class);
-                intent.putExtra("actionType", action);
+                intent.putExtra(Actions.ACTION_TYPE, action);
                 v.getContext().startActivity(intent);
             }
         }

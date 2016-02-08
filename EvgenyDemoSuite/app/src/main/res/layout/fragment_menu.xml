@@ -9,7 +9,7 @@
         android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:text="Speech To Text"
-        android:textSize="25sp"
+        android:textSize="@dimen/font_25_sp"
         android:id="@+id/speechToText"
         android:layout_gravity="center_horizontal" />
 
@@ -17,7 +17,7 @@
         android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:text="Text To Speech"
-        android:textSize="25sp"
+        android:textSize="@dimen/font_25_sp"
         android:id="@+id/textToSpeech"
         android:layout_gravity="center_horizontal" />
 
@@ -25,7 +25,7 @@
         android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:text="Audio"
-        android:textSize="25sp"
+        android:textSize="@dimen/font_25_sp"
         android:id="@+id/audio"
         android:layout_gravity="center_horizontal" />
 
@@ -33,7 +33,7 @@
         android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:text="Video"
-        android:textSize="25sp"
+        android:textSize="@dimen/font_25_sp"
         android:id="@+id/video"
         android:layout_gravity="center_horizontal" />
 
@@ -41,7 +41,7 @@
         android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:text="Animation"
-        android:textSize="25sp"
+        android:textSize="@dimen/font_25_sp"
         android:id="@+id/animation"
         android:layout_gravity="center_horizontal" />
 </LinearLayout>
