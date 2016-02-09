@@ -11,7 +11,8 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:layout_gravity="center_horizontal"
-        android:text="@string/helloText"/>
+        android:text="@string/helloText"
+        android:id="@+id/textToSpeak"/>
 
     <Button
         android:layout_width="wrap_content"
