@@ -25,6 +25,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:layout_gravity="center_horizontal"
-        android:text="Tap on mic to speak"/>
+        android:text="Tap on mic to speak"
+        android:id="@+id/spokenText"/>
 
 </LinearLayout>

@@ -19,6 +19,6 @@
         android:text="Speak"
         android:id="@+id/speakButton"
         android:layout_gravity="center_horizontal"
-        android:textSize="@dimen/font_25_sp"/>
+        android:textSize="@dimen/button_font"/>
 
 </LinearLayout>

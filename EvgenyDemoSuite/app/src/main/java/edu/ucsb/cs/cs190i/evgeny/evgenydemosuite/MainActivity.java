@@ -32,32 +32,34 @@ public class MainActivity extends AppCompatActivity {
         animation.setOnClickListener(listener);
     }
 
+    private int getActionIdFromButtonId(int buttonId) {
+        switch (buttonId) {
+            case R.id.speechToText: return Actions.SPEECH_TO_TEXT;
+            case R.id.textToSpeech: return Actions.TEXT_TO_SPEECH;
+            case R.id.audio:        return Actions.AUDIO;
+            case R.id.video:        return Actions.VIDEO;
+            case R.id.animation:    return Actions.ANIMATION;
+        }
+        return -1;
+    }
+
     class ActionClickListener implements View.OnClickListener {
 
         @Override
         public void onClick(View v) {
             boolean landscape = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
-            int action = -1;
-            int id = v.getId();
-            int frag_id = -1;
-            Fragment fragment = null;
-            switch (id) {
-                case R.id.speechToText: action = Actions.SPEECH_TO_TEXT; frag_id = R.id.speechToText; fragment = new FragmentSpeechToText(); break;
-                case R.id.textToSpeech: action = Actions.TEXT_TO_SPEECH; frag_id = R.id.textToSpeech; fragment = new FragmentTextToSpeech(); break;
-                case R.id.audio:        action = Actions.AUDIO;          frag_id = R.id.audio;        fragment = new FragmentAudio();        break;
-                case R.id.video:        action = Actions.VIDEO;          frag_id = R.id.video;        fragment = new FragmentVideo();        break;
-                case R.id.animation:    action = Actions.ANIMATION;      frag_id = R.id.animation;    fragment = new FragmentAnimation();    break;
-            }
+            int action = getActionIdFromButtonId(v.getId());
 
             if (landscape) {
                 // Set fragment
                 Bundle bundle = new Bundle();
                 bundle.putInt(Actions.ACTION_TYPE, action);
 
-                /*DetailFragment fragment = new DetailFragment();
-                fragment.setArguments(bundle);
-
-                getFragmentManager().beginTransaction().replace(R.id.mainActivityPlaceholder, fragment).commit();*/
+                Fragment fragment = Actions.getFragmentFromId(action);
+                if (fragment != null) {
+                    fragment.setArguments(bundle);
+                    getFragmentManager().beginTransaction().replace(R.id.mainActivityPlaceholder, fragment).commit();
+                }
             } else {
                 // Launch intent
                 Intent intent = new Intent(v.getContext(), DetailActivity.class);

@@ -6,42 +6,42 @@
 
 
     <Button
-        android:layout_width="250dp"
+        android:layout_width="@dimen/button_width"
         android:layout_height="wrap_content"
-        android:text="Speech To Text"
-        android:textSize="@dimen/font_25_sp"
+        android:text="@string/speechToText"
+        android:textSize="@dimen/button_font"
         android:id="@+id/speechToText"
         android:layout_gravity="center_horizontal" />
 
     <Button
-        android:layout_width="250dp"
+        android:layout_width="@dimen/button_width"
         android:layout_height="wrap_content"
-        android:text="Text To Speech"
-        android:textSize="@dimen/font_25_sp"
+        android:text="@string/textToSpeech"
+        android:textSize="@dimen/button_font"
         android:id="@+id/textToSpeech"
         android:layout_gravity="center_horizontal" />
 
     <Button
-        android:layout_width="250dp"
+        android:layout_width="@dimen/button_width"
         android:layout_height="wrap_content"
-        android:text="Audio"
-        android:textSize="@dimen/font_25_sp"
+        android:text="@string/audio"
+        android:textSize="@dimen/button_font"
         android:id="@+id/audio"
         android:layout_gravity="center_horizontal" />
 
     <Button
-        android:layout_width="250dp"
+        android:layout_width="@dimen/button_width"
         android:layout_height="wrap_content"
-        android:text="Video"
-        android:textSize="@dimen/font_25_sp"
+        android:text="@string/video"
+        android:textSize="@dimen/button_font"
         android:id="@+id/video"
         android:layout_gravity="center_horizontal" />
 
     <Button
-        android:layout_width="250dp"
+        android:layout_width="@dimen/button_width"
         android:layout_height="wrap_content"
-        android:text="Animation"
-        android:textSize="@dimen/font_25_sp"
+        android:text="@string/animation"
+        android:textSize="@dimen/button_font"
         android:id="@+id/animation"
         android:layout_gravity="center_horizontal" />
 </LinearLayout>
