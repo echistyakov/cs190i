@@ -6,4 +6,10 @@
     android:layout_height="match_parent"
     tools:context="edu.ucsb.cs.cs190i.evgeny.evgenydemosuite.FragmentAnimation">
 
+    <edu.ucsb.cs.cs190i.evgeny.evgenydemosuite.FragmentAnimation.AnimationView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/animationView"
+        android:background="@color/yellow"/>
+
 </LinearLayout>

@@ -21,6 +21,7 @@ public class FragmentVideo extends Fragment {
 
     @Override
     public void onStart() {
+        super.onStart();
         VideoView videoView = (VideoView) getView().findViewById(R.id.videoView);
         videoView.setMediaController(new MediaController(this.getActivity()));
         Uri video = Uri.parse("android.resource://" + getActivity().getPackageName() + "/" + R.raw.bigbuck);
