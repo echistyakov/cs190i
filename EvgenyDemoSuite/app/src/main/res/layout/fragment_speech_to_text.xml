@@ -11,7 +11,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="center_horizontal"
+        android:textSize="@dimen/my_text_size"
+        android:id="@+id/spokenText" />
 
     <ImageButton
         android:layout_width="wrap_content"
@@ -25,7 +27,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:layout_gravity="center_horizontal"
-        android:text="Tap on mic to speak"
-        android:id="@+id/spokenText"/>
+        android:textSize="@dimen/my_text_size"
+        android:text="Tap on mic to speak" />
 
 </LinearLayout>

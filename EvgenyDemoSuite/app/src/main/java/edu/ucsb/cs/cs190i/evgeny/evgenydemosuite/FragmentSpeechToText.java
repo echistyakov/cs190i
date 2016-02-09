@@ -7,16 +7,12 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 import java.util.List;
 import java.util.Locale;
@@ -37,7 +33,20 @@ public class FragmentSpeechToText extends Fragment {
                 launchSpeechRecognition();
             }
         });
+        if (savedInstanceState != null) {
+            String spokenText = savedInstanceState.getString("spokenText", "");
+            TextView textView = (TextView) layout.findViewById(R.id.spokenText);
+            textView.setText(spokenText);
+        }
         return layout;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        TextView textView = (TextView) getView().findViewById(R.id.spokenText);
+        String spokenText = textView.getText().toString();
+        outState.putString("spokenText", spokenText);
+        super.onSaveInstanceState(outState);
     }
 
     private void launchSpeechRecognition() {
@@ -53,6 +62,11 @@ public class FragmentSpeechToText extends Fragment {
         }
     }
 
+    private void setSpokenText(String text) {
+        TextView textView = (TextView) getView().findViewById(R.id.spokenText);
+        textView.setText(text);
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
@@ -61,8 +75,7 @@ public class FragmentSpeechToText extends Fragment {
                 // Extract spoken text
                 List<String> list = intent.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                 String spokenText = list.get(0);
-                TextView textView = (TextView) getView().findViewById(R.id.spokenText);
-                textView.setText(spokenText);
+                setSpokenText(spokenText);
             }
         }
     }

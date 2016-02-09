@@ -11,6 +11,14 @@ import android.widget.Button;
 
 public class FragmentAudio extends Fragment {
 
+    private MediaPlayer mp = null;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        this.mp = MediaPlayer.create(getActivity(), R.raw.fanfare);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
@@ -27,6 +35,9 @@ public class FragmentAudio extends Fragment {
     }
 
     private void playSound() {
-        MediaPlayer.create(this.getActivity(), R.raw.fanfare).start();
+        if (!this.mp.isPlaying()) {
+            this.mp.seekTo(0);
+            this.mp.start();
+        }
     }
 }

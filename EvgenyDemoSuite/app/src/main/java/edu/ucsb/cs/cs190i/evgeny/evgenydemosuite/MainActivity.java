@@ -10,6 +10,8 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
+    private Fragment fragment = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,6 +32,13 @@ public class MainActivity extends AppCompatActivity {
         audio.setOnClickListener(listener);
         video.setOnClickListener(listener);
         animation.setOnClickListener(listener);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // Save fragment's state
+        //getSupportFragmentManager().putFragment(outState, "fragment", fragment);
+        super.onSaveInstanceState(outState);
     }
 
     private int getActionIdFromButtonId(int buttonId) {
@@ -55,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
                 Bundle bundle = new Bundle();
                 bundle.putInt(Actions.ACTION_TYPE, action);
 
-                Fragment fragment = Actions.getFragmentFromId(action);
+                fragment = Actions.getFragmentFromId(action);
                 if (fragment != null) {
                     fragment.setArguments(bundle);
                     getFragmentManager().beginTransaction().replace(R.id.mainActivityPlaceholder, fragment).commit();
