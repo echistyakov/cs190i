@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">EvgenyDemoSuite</string>
+    <string name="app_name">DemoSuite</string>
     <string name="helloText">Hello Text to Speech Fragment!</string>
     <string name="speechToText">Speech To Text</string>
     <string name="textToSpeech">Text To Speech</string>
