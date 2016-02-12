@@ -1,7 +1,6 @@
 package edu.ucsb.cs.cs190i.evgeny.evgenydemosuite;
 
 
-import android.app.Fragment;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.view.LayoutInflater;
@@ -9,9 +8,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
-public class FragmentTextToSpeech extends Fragment {
+public class FragmentTextToSpeech extends StateFragment {
 
     private TextToSpeech tts;
     private boolean ttsReady;
@@ -41,6 +41,22 @@ public class FragmentTextToSpeech extends Fragment {
             }
         });
         return layout;
+    }
+
+    @Override
+    protected void onSaveState(Bundle outState) {
+        TextView textView = (TextView) getView().findViewById(R.id.textToSpeak);
+        String textToSpeak = textView.getText().toString();
+        outState.putString("textToSpeak", textToSpeak);
+    }
+
+    @Override
+    protected void onRestoreState(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            String textToSpeak = savedInstanceState.getString("textToSpeak", "");
+            TextView textView = (TextView) getView().findViewById(R.id.textToSpeak);
+            textView.setText(textToSpeak);
+        }
     }
 
     private void speakText() {

@@ -2,7 +2,6 @@ package edu.ucsb.cs.cs190i.evgeny.evgenydemosuite;
 
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,7 +16,7 @@ import android.widget.Toast;
 import java.util.List;
 import java.util.Locale;
 
-public class FragmentSpeechToText extends Fragment {
+public class FragmentSpeechToText extends StateFragment {
 
     private static final int ACTION_RECOGNIZE_SPEECH = 1;
 
@@ -33,20 +32,23 @@ public class FragmentSpeechToText extends Fragment {
                 launchSpeechRecognition();
             }
         });
-        if (savedInstanceState != null) {
-            String spokenText = savedInstanceState.getString("spokenText", "");
-            TextView textView = (TextView) layout.findViewById(R.id.spokenText);
-            textView.setText(spokenText);
-        }
         return layout;
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
+    protected void onSaveState(Bundle outState) {
         TextView textView = (TextView) getView().findViewById(R.id.spokenText);
         String spokenText = textView.getText().toString();
         outState.putString("spokenText", spokenText);
+    }
+
+    @Override
+    protected void onRestoreState(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            String spokenText = savedInstanceState.getString("spokenText", "");
+            TextView textView = (TextView) getView().findViewById(R.id.spokenText);
+            textView.setText(spokenText);
+        }
     }
 
     private void launchSpeechRecognition() {
