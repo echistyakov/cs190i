@@ -1,6 +1,7 @@
 package edu.ucsb.cs.cs190i.evgeny.evgenydemosuite;
 
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.support.v7.app.AppCompatActivity;
@@ -37,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         // Save fragment's state
-        //getSupportFragmentManager().putFragment(outState, "fragment", fragment);
         super.onSaveInstanceState(outState);
     }
 
@@ -61,13 +61,11 @@ public class MainActivity extends AppCompatActivity {
 
             if (landscape) {
                 // Set fragment
-                Bundle bundle = new Bundle();
-                bundle.putInt(Actions.ACTION_TYPE, action);
-
                 fragment = Actions.getFragmentFromId(action);
                 if (fragment != null) {
-                    fragment.setArguments(bundle);
-                    getFragmentManager().beginTransaction().replace(R.id.mainActivityPlaceholder, fragment).commit();
+                    FragmentManager fm = getFragmentManager();
+                    Fragment current = fm.findFragmentById(R.id.mainActivityPlaceholder);
+                    fm.beginTransaction().replace(R.id.mainActivityPlaceholder, fragment).commit();
                 }
             } else {
                 // Launch intent

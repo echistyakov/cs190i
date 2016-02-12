@@ -43,10 +43,10 @@ public class FragmentSpeechToText extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         TextView textView = (TextView) getView().findViewById(R.id.spokenText);
         String spokenText = textView.getText().toString();
         outState.putString("spokenText", spokenText);
-        super.onSaveInstanceState(outState);
     }
 
     private void launchSpeechRecognition() {
