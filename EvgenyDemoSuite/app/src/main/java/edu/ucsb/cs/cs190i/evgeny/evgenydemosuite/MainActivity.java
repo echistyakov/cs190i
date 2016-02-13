@@ -11,7 +11,7 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Fragment fragment = null;
+    private int currentActionId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,12 +33,11 @@ public class MainActivity extends AppCompatActivity {
         audio.setOnClickListener(listener);
         video.setOnClickListener(listener);
         animation.setOnClickListener(listener);
-    }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        // Save fragment's state
-        super.onSaveInstanceState(outState);
+        // Restore state
+        if (savedInstanceState != null) {
+            currentActionId = savedInstanceState.getInt("currentActionId", -1);
+        }
     }
 
     private int getActionIdFromButtonId(int buttonId) {
@@ -52,19 +51,53 @@ public class MainActivity extends AppCompatActivity {
         return -1;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putInt("currentActionId", currentActionId);
+        super.onSaveInstanceState(outState);
+    }
+
+    /*@Override
+    public void onResume() {
+        super.onResume();
+        boolean landscape = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
+        if (landscape && currentActionId != -1) {
+            // Set fragment
+            Fragment fragment = Actions.getFragmentFromId(currentActionId);
+            if (fragment != null) {
+                getFragmentManager().beginTransaction().replace(R.id.mainActivityPlaceholder, fragment).commit();
+            }
+        }
+    }*/
+
+    /*@Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT && currentActionId != -1) {
+            Fragment fragment = Actions.getFragmentFromId(currentActionId);
+            getFragmentManager().beginTransaction().remove(fragment).commit();
+            // Launch intent
+            Intent intent = new Intent(this, DetailActivity.class);
+            intent.putExtra(Actions.ACTION_TYPE, currentActionId);
+            startActivity(intent);
+        } else {
+            recreate();
+        }
+    }*/
+
     class ActionClickListener implements View.OnClickListener {
 
         @Override
         public void onClick(View v) {
             boolean landscape = (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE);
             int action = getActionIdFromButtonId(v.getId());
+            currentActionId = action;
 
             if (landscape) {
                 // Set fragment
-                fragment = Actions.getFragmentFromId(action);
+                Fragment fragment = Actions.getFragmentFromId(action);
                 if (fragment != null) {
                     FragmentManager fm = getFragmentManager();
-                    Fragment current = fm.findFragmentById(R.id.mainActivityPlaceholder);
                     fm.beginTransaction().replace(R.id.mainActivityPlaceholder, fragment).commit();
                 }
             } else {
