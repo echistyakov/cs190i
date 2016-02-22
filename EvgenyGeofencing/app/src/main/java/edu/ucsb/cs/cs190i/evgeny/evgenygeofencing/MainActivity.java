@@ -3,6 +3,8 @@ package edu.ucsb.cs.cs190i.evgeny.evgenygeofencing;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.SeekBar;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -16,7 +18,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, OnMapClickListener, SeekBar.OnSeekBarChangeListener {
+
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, OnMapClickListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener {
 
     // Map objects
     private GoogleMap map = null;
@@ -32,8 +35,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final String GEO_TEXT = "LAT: {}, LON: {}, RAD: {}m";
 
     // Variables
-    private static LatLng curretnLoc = DEFAULT_LOC;
-    private static int currentRad = DEFAULT_RAD;
+    private LatLng currentLoc = DEFAULT_LOC;
+    private int currentRad = DEFAULT_RAD;
+    private boolean geofenceEnabled = false;
 
 
     @Override
@@ -50,37 +54,39 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         radiusBar.setMax(MAX_RAD);
         radiusBar.setProgress(DEFAULT_RAD);
         radiusBar.setOnSeekBarChangeListener(this);
+
+        // Set up button
+        Button geofenceButton = (Button) findViewById(R.id.geofenceButton);
+        geofenceButton.setOnClickListener(this);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
 
-        // Add a marker (UCSB)
-        marker = map.addMarker(new MarkerOptions().position(DEFAULT_LOC).title("UCSB"));
+        // Add a marker
+        marker = map.addMarker(new MarkerOptions().position(currentLoc).title("Marker"));
 
         // Add a circle
-        circle = map.addCircle(new CircleOptions().center(DEFAULT_LOC).radius(DEFAULT_RAD).strokeColor(Color.GREEN));
+        circle = map.addCircle(new CircleOptions().center(currentLoc).radius(currentRad).strokeColor(Color.BLUE).fillColor(Color.BLUE));
 
         // Set map click listener
         map.setOnMapClickListener(this);
 
         // Move camera to marker
-        map.moveCamera(CameraUpdateFactory.newLatLng(DEFAULT_LOC));
+        map.moveCamera(CameraUpdateFactory.newLatLng(currentLoc));
     }
 
     @Override
     public void onMapClick(LatLng latLng) {
         // Save new location
-        curretnLoc = latLng;
+        currentLoc = latLng;
 
         // Reset marker
         marker.setPosition(latLng);
-        marker.setTitle("Marker");
 
         // Reset circle
         circle.setCenter(latLng);
-        // TODO: do we need this? map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
     }
 
     @Override
@@ -95,11 +101,46 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
-        // TODO: circle should be green
+        // Green circle
+        if (circle != null) {
+            circle.setFillColor(Color.TRANSPARENT);
+            circle.setStrokeColor(Color.GREEN);
+        }
     }
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-        // TODO: circle should be blue
+        // Blue circle
+        if (circle != null) {
+            circle.setFillColor(Color.BLUE);
+            circle.setStrokeColor(Color.BLUE);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        Button geofenceButton = (Button) v;
+        if (geofenceEnabled) {
+            // Update circle color
+            circle.setFillColor(Color.BLUE);
+            circle.setStrokeColor(Color.BLUE);
+            // Update button text
+            geofenceButton.setText(R.string.set_geofence);
+            // Enable map clicks
+            map.setOnMapClickListener(this);
+            // TODO: edit geofence
+
+        } else {
+            // Update circle color
+            circle.setFillColor(Color.BLUE);
+            circle.setStrokeColor(Color.GREEN);
+            // Update button text
+            geofenceButton.setText(R.string.edit_geofence);
+            // Disable map clicks
+            map.setOnMapClickListener(null);
+            // TODO: set geofence
+        }
+        // Flip the flag
+        geofenceEnabled = !geofenceEnabled;
     }
 }
