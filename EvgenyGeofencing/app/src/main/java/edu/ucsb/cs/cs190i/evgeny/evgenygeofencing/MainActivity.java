@@ -12,6 +12,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -65,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         map = googleMap;
 
         // Add a marker
-        marker = map.addMarker(new MarkerOptions().position(currentLoc).title("Marker"));
+        marker = map.addMarker(new MarkerOptions().position(currentLoc).title("Marker").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
 
         // Add a circle
         circle = map.addCircle(new CircleOptions().center(currentLoc).radius(currentRad).strokeColor(Color.BLUE).fillColor(Color.BLUE));
@@ -124,6 +125,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Update circle color
             circle.setFillColor(Color.BLUE);
             circle.setStrokeColor(Color.BLUE);
+            // Update marker color
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
             // Update button text
             geofenceButton.setText(R.string.set_geofence);
             // Enable map clicks
@@ -134,6 +137,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Update circle color
             circle.setFillColor(Color.BLUE);
             circle.setStrokeColor(Color.GREEN);
+            // Update marker color
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
             // Update button text
             geofenceButton.setText(R.string.edit_geofence);
             // Disable map clicks
