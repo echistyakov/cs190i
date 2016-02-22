@@ -1,12 +1,20 @@
 package edu.ucsb.cs.cs190i.evgeny.evgenygeofencing;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -19,14 +27,19 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, OnMapClickListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, OnMapClickListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener, LocationListener {
 
     // Map objects
     private GoogleMap map = null;
     private Marker marker = null;
     private Circle circle = null;
+    private Polyline polyline = null;
 
     // Constants
     private static final double DEFAULT_LAT = 34.412612;
@@ -42,11 +55,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private SeekBar radiusBar = null;
     private Button geofenceButton = null;
 
+    private PermissionManager permissionManager = null;
+
 
     // Variables
     private LatLng currentLoc = DEFAULT_LOC;
     private int currentRad = DEFAULT_RAD;
     private boolean geofenceEnabled = false;
+    private ArrayList<LatLng> trajectory = new ArrayList<>();
 
 
     @Override
@@ -63,15 +79,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         radiusBar = (SeekBar) findViewById(R.id.radiusBar);
         geofenceButton = (Button) findViewById(R.id.geofenceButton);
 
+        // Initialize permissions manager
+        permissionManager = new PermissionManager(this);
+
         // Extract saved instance state if exists
         if (savedInstanceState != null) {
-            LatLng loc = savedInstanceState.getParcelable("currentLoc");
             // Location
-            currentLoc = (loc != null) ? loc : DEFAULT_LOC;
+            if (savedInstanceState.containsKey("currentLoc")) {
+                currentLoc = savedInstanceState.getParcelable("currentLoc");
+            }
             // Radius
             currentRad = savedInstanceState.getInt("currentRad", currentRad);
             // Geofence flag
             geofenceEnabled = savedInstanceState.getBoolean("geofenceEnabled", geofenceEnabled);
+            // Trajectory
+            if (savedInstanceState.containsKey("trajectory")) {
+                trajectory = savedInstanceState.getParcelableArrayList("trajectory");
+            }
         }
 
         // Set up radius bar
@@ -85,6 +109,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        // Listen for location updates
+        addLocationListener();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Remove location updates listener
+        removeLocationListener();
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         // Save location
@@ -93,6 +131,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         outState.putInt("currentRad", currentRad);
         // Save geofence flag
         outState.putBoolean("geofenceEnabled", geofenceEnabled);
+        // Save trajectory
+        outState.putParcelableArrayList("trajectory", trajectory);
     }
 
     @Override
@@ -103,6 +143,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         marker = map.addMarker(new MarkerOptions().position(currentLoc).title("Marker").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
         // Add a circle
         circle = map.addCircle(new CircleOptions().center(currentLoc).radius(currentRad).strokeColor(Color.BLUE).fillColor(COLOR_TRANSPARENT_BLUE));
+        // Add a polyline
+        polyline = map.addPolyline(new PolylineOptions().color(Color.BLUE).addAll(trajectory));
+
         // Move camera to marker
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLoc, 15));
         // Set map geofence mode
@@ -165,6 +208,38 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (requestCode == PermissionManager.PERMISSION_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                addLocationListener();
+            } else {
+                Toast.makeText(this, "GPS permission denied - cannot track location.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
+        trajectory.add(newPoint);
+        if (polyline != null) {
+            polyline.setPoints(trajectory);
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+    }
+
     private void updateGeoText() {
         String geoText = String.format(GEO_TEXT, currentLoc.latitude, currentLoc.longitude, currentRad);
         geofenceTextView.setText(geoText);
@@ -203,6 +278,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Update circle color
             circle.setStrokeColor(Color.BLUE);
             circle.setFillColor(COLOR_TRANSPARENT_BLUE);
+        }
+    }
+
+    private void addLocationListener() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            permissionManager.requestPermissionsIfMissing();
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+    }
+
+    private void removeLocationListener() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        try {
+            locationManager.removeUpdates(this);
+        } catch (SecurityException e) {
+            // Do nothing
         }
     }
 }
