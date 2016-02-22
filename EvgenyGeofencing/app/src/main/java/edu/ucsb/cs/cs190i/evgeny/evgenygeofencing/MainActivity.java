@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -33,7 +34,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final LatLng DEFAULT_LOC = new LatLng(DEFAULT_LAT, DEFAULT_LON);  // UCSB Location
     private static final int MAX_RAD = 2000;
     private static final int DEFAULT_RAD = 500;
-    private static final String GEO_TEXT = "LAT: {}, LON: {}, RAD: {}m";
+    private static final String GEO_TEXT = "LAT: %f, LON: %f, RAD: %dm";
+    private static final int COLOR_TRANSPARENT_BLUE = Color.argb(100, 0, 0, 255);
+
+    // Layout objects
+    private TextView geofenceTextView = null;
+    private SeekBar radiusBar = null;
+    private Button geofenceButton = null;
+
 
     // Variables
     private LatLng currentLoc = DEFAULT_LOC;
@@ -50,15 +58,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFrag = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFrag.getMapAsync(this);
 
-        // Set up slider
-        SeekBar radiusBar = (SeekBar) findViewById(R.id.radiusBar);
+        // Get views
+        geofenceTextView = (TextView) findViewById(R.id.geofenceText);
+        radiusBar = (SeekBar) findViewById(R.id.radiusBar);
+        geofenceButton = (Button) findViewById(R.id.geofenceButton);
+
+        // Set up radius bar
         radiusBar.setMax(MAX_RAD);
         radiusBar.setProgress(DEFAULT_RAD);
         radiusBar.setOnSeekBarChangeListener(this);
 
         // Set up button
-        Button geofenceButton = (Button) findViewById(R.id.geofenceButton);
         geofenceButton.setOnClickListener(this);
+
+        // Set geo text
+        updateGeoText();
+    }
+
+    private void updateGeoText() {
+        String geoText = String.format(GEO_TEXT, currentLoc.latitude, currentLoc.longitude, currentRad);
+        geofenceTextView.setText(geoText);
     }
 
     @Override
@@ -67,82 +86,79 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Add a marker
         marker = map.addMarker(new MarkerOptions().position(currentLoc).title("Marker").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-
         // Add a circle
-        circle = map.addCircle(new CircleOptions().center(currentLoc).radius(currentRad).strokeColor(Color.BLUE).fillColor(Color.BLUE));
-
+        circle = map.addCircle(new CircleOptions().center(currentLoc).radius(currentRad).strokeColor(Color.BLUE).fillColor(COLOR_TRANSPARENT_BLUE));
         // Set map click listener
         map.setOnMapClickListener(this);
-
         // Move camera to marker
-        map.moveCamera(CameraUpdateFactory.newLatLng(currentLoc));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLoc, 15));
     }
 
     @Override
     public void onMapClick(LatLng latLng) {
         // Save new location
         currentLoc = latLng;
-
         // Reset marker
         marker.setPosition(latLng);
-
         // Reset circle
         circle.setCenter(latLng);
+        // Update geo text
+        updateGeoText();
     }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         // Save new location
         currentRad = progress;
-        if (circle != null) {
-            // Set radius
-            circle.setRadius(progress);
-        }
+        // Set radius
+        circle.setRadius(progress);
+        // Update geo text
+        updateGeoText();
     }
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
-        // Green circle
-        if (circle != null) {
-            circle.setFillColor(Color.TRANSPARENT);
-            circle.setStrokeColor(Color.GREEN);
-        }
+        // Make circle green
+        circle.setStrokeColor(Color.GREEN);
+        circle.setFillColor(Color.TRANSPARENT);
     }
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-        // Blue circle
-        if (circle != null) {
-            circle.setFillColor(Color.BLUE);
-            circle.setStrokeColor(Color.BLUE);
-        }
+        // Make circle blue
+        circle.setStrokeColor(Color.BLUE);
+        circle.setFillColor(COLOR_TRANSPARENT_BLUE);
     }
 
     @Override
     public void onClick(View v) {
-        Button geofenceButton = (Button) v;
         if (geofenceEnabled) {
-            // Update circle color
-            circle.setFillColor(Color.BLUE);
-            circle.setStrokeColor(Color.BLUE);
-            // Update marker color
-            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-            // Update button text
-            geofenceButton.setText(R.string.set_geofence);
             // Enable map clicks
             map.setOnMapClickListener(this);
+            // Enable radius bar
+            radiusBar.setEnabled(true);
+            // Update button text
+            geofenceButton.setText(R.string.set_geofence);
+            // Update marker color
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+            // Update circle color
+            circle.setStrokeColor(Color.BLUE);
+            circle.setFillColor(COLOR_TRANSPARENT_BLUE);
             // TODO: edit geofence
 
         } else {
-            // Update circle color
-            circle.setFillColor(Color.BLUE);
-            circle.setStrokeColor(Color.GREEN);
-            // Update marker color
-            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-            // Update button text
-            geofenceButton.setText(R.string.edit_geofence);
             // Disable map clicks
             map.setOnMapClickListener(null);
+            // Disable radius bar
+            radiusBar.setEnabled(false);
+            // Update button text
+            geofenceButton.setText(R.string.edit_geofence);
+            // Update marker color
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            // Update circle color
+            circle.setStrokeColor(Color.GREEN);
+            circle.setFillColor(COLOR_TRANSPARENT_BLUE);
+
             // TODO: set geofence
         }
         // Flip the flag

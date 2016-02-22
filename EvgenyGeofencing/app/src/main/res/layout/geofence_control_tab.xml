@@ -14,7 +14,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_alignParentStart="true"
-            android:text="LAT: 34.412612, LON: -119.848411, RAD: 500m"
+            android:textSize="18sp"
             android:id="@+id/geofenceText" />
 
         <Button
@@ -30,6 +30,8 @@
     <SeekBar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/radiusBar" />
+        android:id="@+id/radiusBar"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp" />
 
 </LinearLayout>
