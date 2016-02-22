@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int MAX_RAD = 2000;
     private static final int DEFAULT_RAD = 500;
     private static final String GEO_TEXT = "LAT: %f, LON: %f, RAD: %dm";
-    private static final int COLOR_TRANSPARENT_BLUE = Color.argb(100, 0, 0, 255);
+    private static final int COLOR_TRANSPARENT_BLUE = Color.argb(96, 0, 0, 255);
 
     // Layout objects
     private TextView geofenceTextView = null;
@@ -63,16 +63,32 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         radiusBar = (SeekBar) findViewById(R.id.radiusBar);
         geofenceButton = (Button) findViewById(R.id.geofenceButton);
 
+        // Extract saved instance state if exists
+        if (savedInstanceState != null) {
+            LatLng loc = savedInstanceState.getParcelable("currentLoc");
+            // Location
+            currentLoc = (loc != null) ? loc : DEFAULT_LOC;
+            // Radius
+            currentRad = savedInstanceState.getInt("currentRad", currentRad);
+            // Geofence flag
+            geofenceEnabled = savedInstanceState.getBoolean("geofenceEnabled", geofenceEnabled);
+        }
+
         // Set up radius bar
         radiusBar.setMax(MAX_RAD);
-        radiusBar.setProgress(DEFAULT_RAD);
-        radiusBar.setOnSeekBarChangeListener(this);
-
-        // Set up button
-        geofenceButton.setOnClickListener(this);
 
         // Set geo text
         updateGeoText();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // Save location
+        outState.putParcelable("currentLoc", currentLoc);
+        // Save radius
+        outState.putInt("currentRad", currentRad);
+        // Save geofence flag
+        outState.putBoolean("geofenceEnabled", geofenceEnabled);
     }
 
     private void updateGeoText() {
@@ -92,6 +108,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         map.setOnMapClickListener(this);
         // Move camera to marker
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLoc, 15));
+        // Add listeners
+        radiusBar.setOnSeekBarChangeListener(this);
+        geofenceButton.setOnClickListener(this);
+        // Set radius
+        radiusBar.setProgress(currentRad);
     }
 
     @Override
