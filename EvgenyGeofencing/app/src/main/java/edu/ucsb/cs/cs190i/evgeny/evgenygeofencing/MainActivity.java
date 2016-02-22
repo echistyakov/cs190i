@@ -77,23 +77,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Set up radius bar
         radiusBar.setMax(MAX_RAD);
 
+        // Set control bar geofence mode
+        setControlBarGeofenceMode();
+
         // Set geo text
         updateGeoText();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         // Save location
         outState.putParcelable("currentLoc", currentLoc);
         // Save radius
         outState.putInt("currentRad", currentRad);
         // Save geofence flag
         outState.putBoolean("geofenceEnabled", geofenceEnabled);
-    }
-
-    private void updateGeoText() {
-        String geoText = String.format(GEO_TEXT, currentLoc.latitude, currentLoc.longitude, currentRad);
-        geofenceTextView.setText(geoText);
     }
 
     @Override
@@ -104,10 +103,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         marker = map.addMarker(new MarkerOptions().position(currentLoc).title("Marker").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
         // Add a circle
         circle = map.addCircle(new CircleOptions().center(currentLoc).radius(currentRad).strokeColor(Color.BLUE).fillColor(COLOR_TRANSPARENT_BLUE));
-        // Set map click listener
-        map.setOnMapClickListener(this);
         // Move camera to marker
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLoc, 15));
+        // Set map geofence mode
+        setMapGeofenceMode();
         // Add listeners
         radiusBar.setOnSeekBarChangeListener(this);
         geofenceButton.setOnClickListener(this);
@@ -153,36 +152,57 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onClick(View v) {
-        if (geofenceEnabled) {
-            // Enable map clicks
-            map.setOnMapClickListener(this);
-            // Enable radius bar
-            radiusBar.setEnabled(true);
-            // Update button text
-            geofenceButton.setText(R.string.set_geofence);
-            // Update marker color
-            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-            // Update circle color
-            circle.setStrokeColor(Color.BLUE);
-            circle.setFillColor(COLOR_TRANSPARENT_BLUE);
-            // TODO: edit geofence
+        // Flip the flag
+        geofenceEnabled = !geofenceEnabled;
+        // Set geofence mode on Control Bar and Map
+        setControlBarGeofenceMode();
+        setMapGeofenceMode();
 
+        if (geofenceEnabled) {
+            // TODO: set geofence
         } else {
-            // Disable map clicks
-            map.setOnMapClickListener(null);
+            // TODO: remove geofence
+        }
+    }
+
+    private void updateGeoText() {
+        String geoText = String.format(GEO_TEXT, currentLoc.latitude, currentLoc.longitude, currentRad);
+        geofenceTextView.setText(geoText);
+    }
+
+    private void setControlBarGeofenceMode() {
+        /* Control bar related changes */
+        if (geofenceEnabled) {
             // Disable radius bar
             radiusBar.setEnabled(false);
             // Update button text
             geofenceButton.setText(R.string.edit_geofence);
+        } else {
+            // Enable radius bar
+            radiusBar.setEnabled(true);
+            // Update button text
+            geofenceButton.setText(R.string.set_geofence);
+        }
+    }
+
+    private void setMapGeofenceMode() {
+        /* Map related changes */
+        if (geofenceEnabled) {
+            // Disable map clicks
+            map.setOnMapClickListener(null);
             // Update marker color
             marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
             // Update circle color
             circle.setStrokeColor(Color.GREEN);
             circle.setFillColor(COLOR_TRANSPARENT_BLUE);
-
-            // TODO: set geofence
+        } else {
+            // Enable map clicks
+            map.setOnMapClickListener(this);
+            // Update marker color
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+            // Update circle color
+            circle.setStrokeColor(Color.BLUE);
+            circle.setFillColor(COLOR_TRANSPARENT_BLUE);
         }
-        // Flip the flag
-        geofenceEnabled = !geofenceEnabled;
     }
 }
