@@ -1,13 +1,13 @@
 package edu.ucsb.cs.cs190i.evgeny.evgenygeofencing;
 
-import android.Manifest;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,6 +16,13 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
@@ -33,7 +40,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, OnMapClickListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener, LocationListener {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, OnMapClickListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
 
     // Map objects
     private GoogleMap map = null;
@@ -49,12 +56,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final int DEFAULT_RAD = 500;
     private static final String GEO_TEXT = "LAT: %f, LON: %f, RAD: %dm";
     private static final int COLOR_TRANSPARENT_BLUE = Color.argb(96, 0, 0, 255);
+    private static final String GEOFENCE_ID = "cs190i geofence";
 
     // Layout objects
     private TextView geofenceTextView = null;
     private SeekBar radiusBar = null;
     private Button geofenceButton = null;
 
+    private GoogleApiClient googleApiClient = null;
     private PermissionManager permissionManager = null;
 
 
@@ -106,6 +115,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Set geo text
         updateGeoText();
+
+        // Build Google API client
+        buildGoogleApiClient();
+
+        // Request permissions if missing
+        permissionManager.requestPermissionsIfMissing();
     }
 
     @Override
@@ -113,6 +128,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onStart();
         // Listen for location updates
         addLocationListener();
+        // Google API client connect
+        googleApiClient.connect();
     }
 
     @Override
@@ -120,6 +137,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onStop();
         // Remove location updates listener
         removeLocationListener();
+        // Google API client disconnect
+        googleApiClient.disconnect();
     }
 
     @Override
@@ -140,11 +159,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         map = googleMap;
 
         // Add a marker
-        marker = map.addMarker(new MarkerOptions().position(currentLoc).title("Marker").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+        marker = map.addMarker(
+                new MarkerOptions()
+                        .position(currentLoc)
+                        .title("Marker")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
         // Add a circle
-        circle = map.addCircle(new CircleOptions().center(currentLoc).radius(currentRad).strokeColor(Color.BLUE).fillColor(COLOR_TRANSPARENT_BLUE));
+        circle = map.addCircle(
+                new CircleOptions()
+                        .center(currentLoc)
+                        .radius(currentRad)
+                        .strokeColor(Color.BLUE)
+                        .fillColor(COLOR_TRANSPARENT_BLUE));
         // Add a polyline
-        polyline = map.addPolyline(new PolylineOptions().color(Color.BLUE).addAll(trajectory));
+        polyline = map.addPolyline(
+                new PolylineOptions()
+                        .color(Color.BLUE)
+                        .addAll(trajectory));
 
         // Move camera to marker
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLoc, 15));
@@ -197,15 +228,42 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onClick(View v) {
         // Flip the flag
         geofenceEnabled = !geofenceEnabled;
+
+        if (geofenceEnabled) {
+            // Create geofence
+            Geofence geofence = new Geofence.Builder()
+                    .setRequestId(GEOFENCE_ID)
+                    .setCircularRegion(currentLoc.latitude, currentLoc.longitude, currentRad)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
+                    .setExpirationDuration(Geofence.NEVER_EXPIRE)
+                    .build();
+            // Create geofence request
+            GeofencingRequest geofencingRequest = new GeofencingRequest.Builder()
+                    .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                    .addGeofence(geofence)
+                    .build();
+            // Add geofence
+            try {
+                LocationServices.GeofencingApi.addGeofences(
+                        googleApiClient,
+                        geofencingRequest,
+                        getGeofencePendingIntent()
+                ).setResultCallback(this);
+            } catch (SecurityException e) {
+                geofenceEnabled = !geofenceEnabled;
+                return;
+            }
+        } else {
+            // Remove geofence
+            LocationServices.GeofencingApi.removeGeofences(
+                    googleApiClient,
+                    getGeofencePendingIntent()
+            ).setResultCallback(this);
+        }
+
         // Set geofence mode on Control Bar and Map
         setControlBarGeofenceMode();
         setMapGeofenceMode();
-
-        if (geofenceEnabled) {
-            // TODO: set geofence
-        } else {
-            // TODO: remove geofence
-        }
     }
 
     @Override
@@ -229,16 +287,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-    }
-
+    public void onStatusChanged(String provider, int status, Bundle extras) {}
     @Override
-    public void onProviderEnabled(String provider) {
-    }
-
+    public void onProviderEnabled(String provider) {}
     @Override
-    public void onProviderDisabled(String provider) {
-    }
+    public void onProviderDisabled(String provider) {}
+    @Override
+    public void onConnected(Bundle bundle) {}
+    @Override
+    public void onConnectionSuspended(int i) {}
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {}
 
     private void updateGeoText() {
         String geoText = String.format(GEO_TEXT, currentLoc.latitude, currentLoc.longitude, currentRad);
@@ -283,11 +342,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void addLocationListener() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            permissionManager.requestPermissionsIfMissing();
-            return;
+        try {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        } catch (SecurityException e) {
+            // Do nothing
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
     }
 
     private void removeLocationListener() {
@@ -296,6 +355,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             locationManager.removeUpdates(this);
         } catch (SecurityException e) {
             // Do nothing
+        }
+    }
+
+    protected synchronized void buildGoogleApiClient() {
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
+    private PendingIntent getGeofencePendingIntent() {
+        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
+        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    @Override
+    public void onResult(Status status) {
+        if (status.isSuccess()) {
+
         }
     }
 }
