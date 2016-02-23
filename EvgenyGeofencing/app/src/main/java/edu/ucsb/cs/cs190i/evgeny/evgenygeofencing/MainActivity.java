@@ -40,7 +40,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, OnMapClickListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback<Status> {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, OnMapClickListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     // Map objects
     private GoogleMap map = null;
@@ -91,20 +91,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Initialize permissions manager
         permissionManager = new PermissionManager(this);
 
-        // Extract saved instance state if exists
+        // Restore state if exists
         if (savedInstanceState != null) {
-            // Location
-            if (savedInstanceState.containsKey("currentLoc")) {
-                currentLoc = savedInstanceState.getParcelable("currentLoc");
-            }
-            // Radius
-            currentRad = savedInstanceState.getInt("currentRad", currentRad);
-            // Geofence flag
-            geofenceEnabled = savedInstanceState.getBoolean("geofenceEnabled", geofenceEnabled);
-            // Trajectory
-            if (savedInstanceState.containsKey("trajectory")) {
-                trajectory = savedInstanceState.getParcelableArrayList("trajectory");
-            }
+            onRestoreInstanceState(savedInstanceState);
         }
 
         // Set up radius bar
@@ -152,6 +141,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         outState.putBoolean("geofenceEnabled", geofenceEnabled);
         // Save trajectory
         outState.putParcelableArrayList("trajectory", trajectory);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        // Location
+        if (savedInstanceState.containsKey("currentLoc")) {
+            currentLoc = savedInstanceState.getParcelable("currentLoc");
+        }
+        // Radius
+        currentRad = savedInstanceState.getInt("currentRad", currentRad);
+        // Geofence flag
+        geofenceEnabled = savedInstanceState.getBoolean("geofenceEnabled", geofenceEnabled);
+        // Trajectory
+        if (savedInstanceState.containsKey("trajectory")) {
+            trajectory = savedInstanceState.getParcelableArrayList("trajectory");
+        }
     }
 
     @Override
@@ -248,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         googleApiClient,
                         geofencingRequest,
                         getGeofencePendingIntent()
-                ).setResultCallback(this);
+                );
             } catch (SecurityException e) {
                 geofenceEnabled = !geofenceEnabled;
                 return;
@@ -258,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             LocationServices.GeofencingApi.removeGeofences(
                     googleApiClient,
                     getGeofencePendingIntent()
-            ).setResultCallback(this);
+            );
         }
 
         // Set geofence mode on Control Bar and Map
@@ -369,12 +375,5 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private PendingIntent getGeofencePendingIntent() {
         Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
         return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-
-    @Override
-    public void onResult(Status status) {
-        if (status.isSuccess()) {
-
-        }
     }
 }
