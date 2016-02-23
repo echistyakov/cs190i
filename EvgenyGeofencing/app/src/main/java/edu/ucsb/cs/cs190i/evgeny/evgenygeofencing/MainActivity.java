@@ -10,16 +10,14 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
@@ -40,7 +38,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, OnMapClickListener, SeekBar.OnSeekBarChangeListener, View.OnClickListener, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, OnMapClickListener, SeekBar.OnSeekBarChangeListener, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, CompoundButton.OnCheckedChangeListener {
 
     // Map objects
     private GoogleMap map = null;
@@ -61,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     // Layout objects
     private TextView geofenceTextView = null;
     private SeekBar radiusBar = null;
-    private Button geofenceButton = null;
+    private ToggleButton geofenceButton = null;
 
     private GoogleApiClient googleApiClient = null;
     private PermissionManager permissionManager = null;
@@ -86,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Get views
         geofenceTextView = (TextView) findViewById(R.id.geofenceText);
         radiusBar = (SeekBar) findViewById(R.id.radiusBar);
-        geofenceButton = (Button) findViewById(R.id.geofenceButton);
+        geofenceButton = (ToggleButton) findViewById(R.id.geofenceButton);
 
         // Initialize permissions manager
         permissionManager = new PermissionManager(this);
@@ -100,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         radiusBar.setMax(MAX_RAD);
 
         // Set control bar geofence mode
-        setControlBarGeofenceMode();
+        setRadiusBarGeofenceMode();
 
         // Set geo text
         updateGeoText();
@@ -189,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setMapGeofenceMode();
         // Add listeners
         radiusBar.setOnSeekBarChangeListener(this);
-        geofenceButton.setOnClickListener(this);
+        geofenceButton.setOnCheckedChangeListener(this);
         // Set radius
         radiusBar.setProgress(currentRad);
     }
@@ -231,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onClick(View v) {
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         // Flip the flag
         geofenceEnabled = !geofenceEnabled;
 
@@ -268,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         // Set geofence mode on Control Bar and Map
-        setControlBarGeofenceMode();
+        setRadiusBarGeofenceMode();
         setMapGeofenceMode();
     }
 
@@ -310,18 +308,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         geofenceTextView.setText(geoText);
     }
 
-    private void setControlBarGeofenceMode() {
+    private void setRadiusBarGeofenceMode() {
         /* Control bar related changes */
         if (geofenceEnabled) {
             // Disable radius bar
             radiusBar.setEnabled(false);
-            // Update button text
-            geofenceButton.setText(R.string.edit_geofence);
         } else {
             // Enable radius bar
             radiusBar.setEnabled(true);
-            // Update button text
-            geofenceButton.setText(R.string.set_geofence);
         }
     }
 

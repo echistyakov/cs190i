@@ -17,12 +17,13 @@
             android:textSize="18sp"
             android:id="@+id/geofenceText" />
 
-        <Button
+        <ToggleButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_alignParentEnd="true"
-            android:text="@string/set_geofence"
+            android:textOn="@string/edit_geofence"
+            android:textOff="@string/set_geofence"
             android:id="@+id/geofenceButton" />
 
     </RelativeLayout>
