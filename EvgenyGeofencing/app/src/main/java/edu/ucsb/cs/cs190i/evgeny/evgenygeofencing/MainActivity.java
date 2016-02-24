@@ -230,39 +230,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        // Flip the flag
-        geofenceEnabled = !geofenceEnabled;
+        geofenceEnabled = isChecked;
 
         if (geofenceEnabled) {
-            // Create geofence
-            Geofence geofence = new Geofence.Builder()
-                    .setRequestId(GEOFENCE_ID)
-                    .setCircularRegion(currentLoc.latitude, currentLoc.longitude, currentRad)
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
-                    .setExpirationDuration(Geofence.NEVER_EXPIRE)
-                    .build();
-            // Create geofence request
-            GeofencingRequest geofencingRequest = new GeofencingRequest.Builder()
-                    .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
-                    .addGeofence(geofence)
-                    .build();
-            // Add geofence
-            try {
-                LocationServices.GeofencingApi.addGeofences(
-                        googleApiClient,
-                        geofencingRequest,
-                        getGeofencePendingIntent()
-                );
-            } catch (SecurityException e) {
-                geofenceEnabled = !geofenceEnabled;
-                return;
-            }
+            addGeofence();
         } else {
-            // Remove geofence
-            LocationServices.GeofencingApi.removeGeofences(
-                    googleApiClient,
-                    getGeofencePendingIntent()
-            );
+            removeGeofence();
         }
 
         // Set geofence mode on Control Bar and Map
@@ -296,8 +269,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onProviderEnabled(String provider) {}
     @Override
     public void onProviderDisabled(String provider) {}
+
     @Override
-    public void onConnected(Bundle bundle) {}
+    public void onConnected(Bundle bundle) {
+        // Remove previous geofence if exists
+        if (!geofenceEnabled) {
+            removeGeofence();
+        }
+    }
     @Override
     public void onConnectionSuspended(int i) {}
     @Override
@@ -356,6 +335,39 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } catch (SecurityException e) {
             // Do nothing
         }
+    }
+
+    private void addGeofence() {
+        // Create geofence
+        Geofence geofence = new Geofence.Builder()
+                .setRequestId(GEOFENCE_ID)
+                .setCircularRegion(currentLoc.latitude, currentLoc.longitude, currentRad)
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
+                .setExpirationDuration(Geofence.NEVER_EXPIRE)
+                .build();
+        // Create geofence request
+        GeofencingRequest geofencingRequest = new GeofencingRequest.Builder()
+                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                .addGeofence(geofence)
+                .build();
+        // Add geofence
+        try {
+            LocationServices.GeofencingApi.addGeofences(
+                    googleApiClient,
+                    geofencingRequest,
+                    getGeofencePendingIntent()
+            );
+        } catch (SecurityException e) {
+            // Do nothing
+        }
+    }
+
+    private void removeGeofence() {
+        // Remove geofence
+        LocationServices.GeofencingApi.removeGeofences(
+                googleApiClient,
+                getGeofencePendingIntent()
+        );
     }
 
     protected synchronized void buildGoogleApiClient() {
